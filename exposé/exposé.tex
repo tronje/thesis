@@ -1,6 +1,7 @@
 \documentclass[a4paper, 12pt]{scrreprt}
 
 \usepackage[utf8]{inputenc}
+% \usepackage{datetime2}
 \usepackage{amsmath}
 \usepackage{marvosym}
 \usepackage{graphicx}
@@ -12,9 +13,11 @@
 
 \usepackage[
 	url=true,
-	style=numeric
+	style=numeric,
+    alldates=long,
+    dateabbrev=false
 ]{biblatex}
-% \addbibresource{literature.bib}
+\addbibresource{../literature.bib}
 
 \titlehead{
 	\begin{center}
@@ -29,7 +32,7 @@
 	Exposé\\
 	\medskip
 	\large Implementing browser fingerprinting recognition \\
-    subtitle tbd
+    using OpenWPM
 }
 
 \author{Tronje Krabbe}
@@ -37,19 +40,59 @@
 \date{\today}
 
 \begin{document}
+\hypersetup{hidelinks}
 
 \maketitle
 
 \begin{abstract}
 	\doublespacing
-	This is an overview of the authors thesis.
-    It will be expanded.
+    This is an overview of the author's thesis. It describes the user identification and tracking technique `browser fingerprinting',
+    and explores the detection possibilities of whether it is employed by a website or not.
 \end{abstract}
 
 \tableofcontents
 
 \chapter{Introduction}
-    todo.
+When browsing the web, users can be tracked through the use of cookies, which store information on the user's computer.
+If the user wishes not to be trackable, they can modify or delete any cookie as they see fit. This interaction gives
+operators of websites the ability to track users only if they wish to be tracked.
+There are, however, other methods of uniquely identifying a user and tracking them during their use of the internet,
+which is not as easily mitigated as a cookie.\cite{am_i_unique} On of these methods is called `browser fingerprinting', and it will be
+the focus of this thesis.
 
+Tracking a user does not simply mean recognizing whether a visitor to one's website is a new or an existing user.
+Identifying information can be passed on or sold to partners, advertisers, or even governments, in order to
+construct a rich browsing history of a user.
+
+Browser fingerprinting, also known as device fingerprinting, works by analyzing a web browser's configuration and settings,
+such as installed fonts, language settings, time zone settings, installed add-ons, to name a few.\cite{panopticlick}
+
+    \subsection{Leading Question and Goals}
+    The thesis presents the assertion that techniques to identify and track users across different websites without
+    their knowledge or their ability to easily intervene, violates their privacy.
+    The author will therefore attempt to implement a technique to recognize when a website is deploying browser fingerprinting,
+    and along the way explore the techniques used to do so.
+    The ultimate goal is to integrate the implementation into \url{https://privacyscore.org}, a web-service to test and rank
+    websites according to the extent to which they respect their users' privacy.
+
+    \subsection{Methods and Approach}
+    TODO
+
+\chapter{Implementation}
+TODO
+
+    \subsection{Technology}
+    TODO
+
+    \begin{description}
+        \item[OpenWPM] \hfill \\
+            ``OpenWPM is a web privacy measurement framework which makes it easy to collect data for privacy studies on a scale
+            of thousands to millions of site''\footnote{\url{https://github.com/citp/OpenWPM}}.
+            The author is planning to build upon OpenWPM to create a software that can detect browser fingerprinting.\cite{englehardt2016census}
+    \end{description}
+
+\clearpage
+
+\printbibliography
 
 \end{document}
