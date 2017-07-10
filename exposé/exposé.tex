@@ -12,27 +12,27 @@
 \usepackage{float}
 
 \usepackage[
-	url=true,
-	style=numeric,
+    url=true,
+    style=numeric,
     alldates=long,
     dateabbrev=false
 ]{biblatex}
 \addbibresource{../literature.bib}
 
 \titlehead{
-	\begin{center}
-		\includegraphics[width=4cm]{../images/uhh_logo_minimal.png}\\
-		\medskip
-		University of Hamburg\\
-		Department of Computer Science
-	\end{center}
+    \begin{center}
+        % \includegraphics[width=4cm]{../images/uhh_logo_minimal.png}\\
+        \includegraphics[width=8cm]{../images/UHH-Logo_2010_Farbe_RGB_hires_nomargin.png}\\
+        \medskip
+        Department of Computer Science
+    \end{center}
 }
 
 \title{
-	Exposé\\
-	\medskip
-	\large Implementing browser fingerprinting recognition \\
-    using OpenWPM
+    Exposé\\
+    \medskip
+    \large Implementation of browser fingerprinting recognition \\
+    and integration into PrivacyScore
 }
 
 \author{Tronje Krabbe}
@@ -45,9 +45,9 @@
 \maketitle
 
 \begin{abstract}
-	\doublespacing
+    \doublespacing
     This is an overview of the author's thesis. It describes the user identification and tracking technique `browser fingerprinting',
-    and explores the detection possibilities of whether it is employed by a website or not.
+    and explores the possibilities and technicalities in regards to detecting wether a website employs this technique.
 \end{abstract}
 
 \tableofcontents
@@ -65,7 +65,10 @@ Identifying information can be passed on or sold to partners, advertisers, or ev
 construct a rich browsing history of a user.
 
 Browser fingerprinting, also known as device fingerprinting, works by analyzing a web browser's configuration and settings,
-such as installed fonts, language settings, time zone settings, installed add-ons, to name a few.\cite{panopticlick}
+such as installed fonts, language settings, time zone settings, installed add-ons, to name a few.
+These attributes are readliy available to be collected through JavaScript functions. Simply recording
+all function calls made by the JavaScript frontend of a website can reveal whether fingerprinting is likely to
+be taking place or not.\cite{faiz2014browser}\cite{panopticlick}
 
     \subsection{Leading Question and Goals}
     The thesis presents the assertion that techniques to identify and track users across different websites without
@@ -76,7 +79,23 @@ such as installed fonts, language settings, time zone settings, installed add-on
     websites according to the extent to which they respect their users' privacy.
 
     \subsection{Methods and Approach}
-    TODO
+    \begin{description}
+        \item[Metric] \hfill \\
+            If a website includes a browser fingerprinting library, or makes many calls to JavaScript functions that return
+            data which is useful in building a fingerprint, one can conclude: this website is very likely to actually
+            generate, save, and possibly distribute a browser's fingerprint; simply put: it does browser fingerprinting.
+            However, most modern websites use at least some of the attributes that can be used to construct a fingerprint
+            for reasons other than identification. Analysing installed fonts has an obvious, legitimate use: correctly displaying
+            fonts. Thus, it is important to work out a metric or rating system of some sort, which can
+            (somewhat) reliably represent the likelyhood that fingerprinting is, in fact, taking place.
+
+        \item[Scope] \hfill \\
+            Finding or creating a single website which collects a fingerprint, and basing development of fingerprinting
+            recognition on it, will not yield reliable or representative results. It is imperative to test
+            the created recognition software against a multitude of fingerprinting libraries and users of these.
+
+            TODO: how?
+    \end{description}
 
 \chapter{Implementation}
 TODO
@@ -88,7 +107,11 @@ TODO
         \item[OpenWPM] \hfill \\
             ``OpenWPM is a web privacy measurement framework which makes it easy to collect data for privacy studies on a scale
             of thousands to millions of site''\footnote{\url{https://github.com/citp/OpenWPM}}.
-            The author is planning to build upon OpenWPM to create a software that can detect browser fingerprinting.\cite{englehardt2016census}
+            The author is planning to build upon OpenWPM\cite{englehardt2016census} to create a software that can detect
+            browser fingerprinting. OpenWPM includes capabilities to record
+            ``all method calls (with arguments) and property accesses for APIs of potential fingerprinting interest'',
+            providing a good basis for data collection. Analysing and interpreting this data in a meaningful way
+            will need to be implemented by the author.
     \end{description}
 
 \clearpage
