@@ -86,22 +86,39 @@ be taking place or not.\cite{faiz2014browser}\cite{panopticlick}
             generate, save, and possibly distribute a browser's fingerprint; simply put: it does browser fingerprinting.
             However, most modern websites use at least some of the attributes that can be used to construct a fingerprint
             for reasons other than identification. Analysing installed fonts has an obvious, legitimate use: correctly displaying
-            fonts. Thus, it is important to work out a metric or rating system of some sort, which can
-            (somewhat) reliably represent the likelyhood that fingerprinting is, in fact, taking place.
+            text. Thus, it is important to work out a metric or rating system of some sort, which can
+            (somewhat) reliably represent the likelihood that fingerprinting is, in fact, taking place.
+            Gunes Acar, et. al. assert that the more fonts are being requested, the more likely a website is to
+            be practising fingerprinting. This is based on findings of Eckersley, of the Panopticlick project.\cite{acar2013fpdetective}
+            Gunes Acar, et. al. further state that they classify a JavaScript file as a fingerprinter ``when it loads
+            more than 30 fonts, enumerates plugins or mimeTypes, detects screen and navigator properties, and sends the
+            collected data back to a remote server.''\cite{acar2013fpdetective}
+
 
         \item[Scope] \hfill \\
             Finding or creating a single website which collects a fingerprint, and basing development of fingerprinting
             recognition on it, will not yield reliable or representative results. It is imperative to test
             the created recognition software against a multitude of fingerprinting libraries and users of these.
+            It might be prudent to test the software against, say, the top 500 website as ranked by
+            Alexa \footnote{\url{http://www.alexa.com/topsites}}, as there is a high likelihood these sites employ
+            a multitude of techniques to track their users, but there is no way to be sure if some of these sites wouldn't
+            generate false positives.
+            The safest way could be to create websites which employ an array of fingerprinting libraries both preexisting and
+            implemented by the author, and then comparing the employed JavaScript calls with those from popular websites.
 
-            TODO: how?
+        \item[False positives] \hfill \\
+            Filtering false positives is a non-trivial problem in this context. Requesting fonts via JavaScript might be a dead giveaway
+            that fingerprinting code is, in fact, fingerprinting code. However, it might cause legitimate code, such
+            as a multimedia player of sorts, to be mistaken for fingerprinting code, as well, even though it has a legitimate
+            reason and perhaps a necessity to know a system's installed fonts.
+            Meta-data can be used to filter these; a list can be compiled of popular JavaScript libraries with legitimate,
+            yet fingerprinting-like behavior, and then extended through analysis of collected data (see Technology below).
     \end{description}
 
 \chapter{Implementation}
-TODO
+TODO: Something about PrivacyScore
 
     \subsection{Technology}
-    TODO
 
     \begin{description}
         \item[OpenWPM] \hfill \\
@@ -112,6 +129,11 @@ TODO
             ``all method calls (with arguments) and property accesses for APIs of potential fingerprinting interest'',
             providing a good basis for data collection. Analysing and interpreting this data in a meaningful way
             will need to be implemented by the author.
+
+        \item[SQL] \hfill \\
+            Since OpenWPM produces Sqlite databases containing the results of its tests, a database will be used. It may prove useful
+            to import the resulting Sqlite databases into a more sophisticated system, such as PostgreSQL, perhaps merging them in a
+            meaningful way, and analyzing data not from a single website, but many, as one.
     \end{description}
 
 \clearpage

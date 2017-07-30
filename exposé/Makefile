@@ -8,7 +8,7 @@ default: $(NAME).pdf show
 $(NAME).pdf: $(NAME).tex $(DEPS)
 	rubber --pdf $(NAME)
 
-show:
+show: $(NAME).pdf
 	evince $(NAME).pdf &
 
 spellcheck:
