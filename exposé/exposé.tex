@@ -1,7 +1,17 @@
-\documentclass[a4paper, 12pt]{scrreprt}
+\documentclass[
+    fontsize=12pt,
+    headings=small,
+    parskip=half,
+    bibliography=totoc,
+    numbers=noenddot,
+    open=any
+    ]{scrreprt}
 
 \usepackage[utf8]{inputenc}
 % \usepackage{datetime2}
+\usepackage[
+    autostyle,
+    ]{csquotes}
 \usepackage{amsmath}
 \usepackage{marvosym}
 \usepackage{graphicx}
@@ -9,7 +19,15 @@
 \usepackage{hyperref}
 \usepackage{setspace}
 \usepackage{acronym}
-\usepackage{float}
+% \usepackage{float}
+\usepackage[scaled=.92]{helvet}
+\usepackage{courier}
+\usepackage[
+    a4paper,
+    margin=2.54cm,
+    marginparwidth=2.0cm,
+    footskip=1.0cm
+    ]{geometry}
 
 \usepackage[
     url=true,
@@ -17,7 +35,22 @@
     alldates=long,
     dateabbrev=false
 ]{biblatex}
+% \usepackage[
+%     style=alphabetic,
+%     backend=biber,
+%     %backref=true
+%     ]{biblatex}
 \addbibresource{../literature.bib}
+
+\clubpenalty=10000
+
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\usepackage{floatrow}
+\usepackage{ifdraft}
+\pagestyle{plain}
+\deffootnote{1em}{1em}{
+  \thefootnotemark.\ }
 
 \titlehead{
     \begin{center}
@@ -29,8 +62,6 @@
 }
 
 \title{
-    Exposé\\
-    \medskip
     \large Implementation of browser fingerprinting recognition \\
     and integration into PrivacyScore
 }
@@ -42,113 +73,223 @@
 \begin{document}
 \hypersetup{hidelinks}
 
-\maketitle
+% \maketitle
 
-\begin{abstract}
-    \doublespacing
-    This is an overview of the author's thesis. It describes the user identification and tracking
-    technique `browser fingerprinting',
-    and explores the possibilities and technicalities in regards to detecting whether a website employs
-    this technique.
-\end{abstract}
+\newpage
+\thispagestyle{empty}
+% \addcontentsline{toc}{chapter}{Muster des Deckblatts}
+\begin{titlepage}% {{{
+\includegraphics[width=6.8cm]{../images/up-uhh-logo-u-2010-u-farbe-u-rgb.pdf}
+\begin{center}\Large
+	% Universität Hamburg \par
+	% Fachbereich Informatik
+    \vfill
+    Exposé
+	\vfill
+	\makeatletter
+	{\Large\textsf{\textbf{\@title}}\par}
+	\makeatother
+	\vfill
+    submitted by
+	\par\bigskip
+	\makeatletter
+	{\@author} \par
+	\makeatother
+	born 11. August 1994 in Hamburg \par
+	student number 6435002
+	\vfill
+	\makeatletter
+	submitted {\@date}
+	\makeatother
+	\vfill
+	Betreuer: Dipl.-Inf. Heinz Mustermann \par
+	Erstgutachter: Prof. Dr.-Ing. Hannes Federrath \par
+	Zweitgutachter: N.N.
+\end{center}
+\end{titlepage}% }}}
 
 \tableofcontents
 
-\chapter{Introduction}
-When browsing the web, users can be tracked through the use of cookies, which store information on the user's computer,
+\chapter{Introduction} % {{
+
+When browsing the web, users can be tracked through the use of cookies, which store information on the user's computer
 that can also be accessed by a remote server.
 If the user wishes not to be trackable, they can modify or delete any cookie as they see fit. This interaction gives
 operators of websites the ability to track users only if they wish to be tracked.
 There are, however, other methods of uniquely identifying a user and tracking them during their use of the internet,
-which is not as easily mitigated as a cookie.\cite{am_i_unique} One of these methods is called `browser fingerprinting',
+which is not as easily mitigated as a cookie \cite{am_i_unique}. One of these methods is called `browser fingerprinting',
 and it will be the focus of this thesis.
 
 Tracking a user does not simply mean recognizing whether a visitor to one's website is a new or an existing user.
 Identifying information can be passed on or sold to partners, advertisers, or even governments, in order to
 construct a rich browsing history of a user.
 
-Browser fingerprinting, also known as device fingerprinting, works by analyzing a web browser's configuration and settings,
-such as installed fonts, language settings, time zone settings, installed add-ons, to name a few.
+Browser fingerprinting, also known as device fingerprinting, and in the following often simply referred to as `fingerprinting',
+works by analyzing a web browser's configuration and settings; mostly installed fonts and HTML5 canvas behavior
+\cite{DBLP:conf/ccs/EnglehardtN16}, as well as
+language settings, time zone settings, installed add-ons, and more. Flash is also sometimes used, though
+its end-of-life lies in the foreseeable future, reportedly in the year 2020\footnote{\url{https://arstechnica.com/information-technology/2017/07/with-html5-webgl-javascript-ascendant-adobe-to-cease-flash-dev-at-end-of-2020/}}.
 These attributes are readily available to be collected through JavaScript functions. Simply recording
 all function calls made by the JavaScript front end of a website can reveal whether fingerprinting is likely to
-be taking place or not.\cite{faiz2014browser}\cite{panopticlick}
+be taking place or not \cite{faiz2014browser}\cite{panopticlick}.
 
-    \subsection{Leading Question and Goals}
-    The thesis presents the assertion that techniques to identify and track users across different websites without
-    their knowledge or their ability to easily intervene, violates their privacy; by creating a fingerprint
-    of a user's browser, with sufficiently sophisticated techniques, one can uniquely identify one user
-    among hundreds of thousands\cite{am_i_unique}, re-instate any cookies the user may have deleted,
-    or simply track and analyze their use of any number of web services for a multitude of malicious reasons.\cite{eckersley2010unique}
-    Methods exist to mitigate the effectiveness of browser fingerprinting, such as one presented by Laperdrix, et. al.
-    \cite{laperdrix2015mitigating}; these are, however, usually much more complicated and specialized for
-    the average user of a web-browser.
-    The author will therefore attempt to implement a technique to recognize when a website is deploying browser fingerprinting,
-    and along the way explore the techniques used to do so, for the ultimate goal of integrating this implementation into
-    \url{https://privacyscore.org}, a web-service to test and rank websites according to the extent to which they
-    respect their users' privacy; this creates a different kind of defense against the privacy violating
-    methods that form the topic of this thesis: informing users about websites they use and their treatment of
-    sensitive information.
+The goal of this thesis' work is to implement automated fingerprinting detection, and integrate this into
+PrivacyScore \footnote{\url{https://privacyscore.org}}.
 
-    \subsection{Methods and Approach}
-    \begin{description}
-        \item[Metric] \hfill \\
-            If a website includes a browser fingerprinting library, or makes many calls to JavaScript functions that return
-            data which is useful in building a fingerprint, one can conclude: this website is very likely to actually
-            generate, save, and possibly distribute a browser's fingerprint; simply put: it performs browser fingerprinting.
-            However, most modern websites use at least some of the attributes that can be used to construct a fingerprint
-            for reasons other than identification. Analyzing installed fonts has an obvious, legitimate use: correctly displaying
-            text. Thus, it is important to work out a metric or rating system of some sort, which can
-            (somewhat) reliably represent the likelihood that fingerprinting is, in fact, taking place.
-            Gunes Acar, et. al. assert that the more fonts are being requested, the more likely a website is to
-            be practicing fingerprinting.\cite{acar2013fpdetective}
-            This is based on findings of Eckersley, of the Panopticlick project.\cite{eckersley2010unique}
-            Gunes Acar, et. al. further state that they classify a JavaScript file as a fingerprinter ``when it loads
-            more than 30 fonts, enumerates plugins or mimeTypes, detects screen and navigator properties, and sends the
-            collected data back to a remote server.''\cite{acar2013fpdetective}
-            Englehardt and Narayanan present a metric to detect Canvas-based fingerprinting by specifying certain
-            attributes such a Canvas, and the code using it, should have.\cite{englehardt2016census}
-            The above considerations form a good basis upon which to build a reliable metric.
+% }}
 
-        \item[Scope] \hfill \\
-            Finding or creating a single website which collects a fingerprint, and basing development of fingerprinting
-            recognition on it, will not yield reliable or representative results. It is imperative to test
-            the created recognition software against a multitude of fingerprinting libraries and users of these.
-            It might be prudent to test the software against, say, the top 500 website as ranked by
-            Alexa \footnote{\url{http://www.alexa.com/topsites}}, as there is a high likelihood these sites employ
-            a multitude of techniques to track their users, but there is no way to be sure if some of these sites wouldn't
-            generate false positives.
-            The safest way could be to create websites which employ an array of fingerprinting libraries both preexisting and
-            implemented by the author, and then comparing the employed JavaScript calls with those from popular websites.
+\begingroup
+\renewcommand{\cleardoublepage}{}
+\renewcommand{\clearpage}{}
+\chapter{Related Work} % {{
+\endgroup
 
-        \item[False positives] \hfill \\
-            Filtering false positives is a non-trivial problem in this context. Requesting fonts via JavaScript might be a dead giveaway
-            that fingerprinting code is, in fact, fingerprinting code. However, it might cause legitimate code, such
-            as a multimedia player of sorts, to be mistaken for fingerprinting code, as well, even though it has a legitimate
-            reason and perhaps a necessity to know a system's installed fonts.
-            Meta-data can be used to filter these; a list can be compiled of popular JavaScript libraries with legitimate,
-            yet fingerprinting-like behavior, and then extended through analysis of collected data (see Technology below).
-    \end{description}
+There are some recent projects on the topic of browser fingerprinting that can be of use for this thesis.
+The following is a rundown of the most relevant and useful works.
 
-\chapter{Implementation}
+Acar et al. provide some useful metrics to differentiate between fingerprinting and legitimate use of
+fingerprint-building resources \cite{DBLP:conf/ccs/AcarJNDGPP13}. They have implemented a fingerprinting-detection
+framework called `FPDetective', that can be used as a guide and something to test against.
+
+Englehardt et al. have developed a framework called `OpenWPM' which can be used to analyse the way a website
+handles the users' privacy. They have used this to analyse one million websites' tracking behavior
+\cite{DBLP:conf/ccs/EnglehardtN16}. Their work can be used to implement customized fingerprinting detection,
+and their dataset can be tested against. They further provide some good insights into fingerprinting in general.
+
+FaizKhademi et al. have created `FPGuard', a browser extension designed to alert the user about active
+fingerprinting, and help prevent it \cite{faizkhademi2015fpguard}, which can help with evaluation of our
+implementation.
+
+Am I Unique? \cite{am_i_unique} is a website that can generate a browser fingerprint for demonstration
+purposes. It can be of great use in evaluating a fingerprinting detection algorithm, since it is an obvious and
+safe assumption that it employs fingerprinting.
+
+The Panopticlick project by the Electronic Frontier Foundation also creates a browser fingerprint upon request
+\cite{panopticlick},
+and can be used to confirm at least a minimal working state of the software, just like \textit{Am I Unique?}.
+
+% }}
+
+\begingroup
+\renewcommand{\cleardoublepage}{}
+\renewcommand{\clearpage}{}
+\chapter{Leading Question and Goals} % {{
+\endgroup
+
+The thesis presents the assertion that techniques to identify and track users across different websites without
+their knowledge or their ability to easily intervene, violates their privacy; by creating a fingerprint
+of a user's browser, with sufficiently sophisticated techniques, one can uniquely identify one user
+among hundreds of thousands \cite{am_i_unique}, re-instate any cookies the user may have deleted,
+or simply track and analyze their use of any number of web services for a multitude of malicious reasons \cite{eckersley2010unique}.
+Methods exist to mitigate the effectiveness of browser fingerprinting, such as the one presented
+in \cite{laperdrix2015mitigating};
+these are, however, usually much more complicated and specialized for the average user of a web-browser.
+The author will therefore attempt to implement a technique to recognize when a website is deploying browser fingerprinting,
+and along the way explore the techniques used to do so, with the ultimate goal of integrating this implementation into
+\url{https://privacyscore.org}, a web-service to test and rank websites according to the extent to which they
+respect their users' privacy; this creates a different kind of defense against the privacy violating
+methods that form the topic of this thesis: informing users about websites they use and their treatment of
+sensitive information.
+
+% }}
+
+\begingroup
+\renewcommand{\cleardoublepage}{}
+\renewcommand{\clearpage}{}
+\chapter{Methods and Approach} % {{
+\endgroup
+
+\section{Metric}
+If a website includes a browser fingerprinting library, or makes many calls to JavaScript functions that return
+data which is useful in building a fingerprint, one can conclude: this website is very likely generating,
+saving, and possibly distributing a browser's fingerprint; simply put: it performs browser fingerprinting.
+However, some modern websites likely use at least some of the attributes that can be used to construct a fingerprint
+for reasons other than identification. Analyzing installed fonts has an obvious, legitimate use: correctly displaying
+text. Thus, it is important to work out a metric or rating system of some sort, which can
+(somewhat) reliably represent the likelihood that fingerprinting is, in fact, taking place.
+Acar et al. assert that the more fonts are being requested, the more likely a website is to
+be practicing fingerprinting \cite{DBLP:conf/ccs/AcarJNDGPP13}.
+This is based on findings of Eckersley, of the Panopticlick project \cite{eckersley2010unique}.
+Acar et al. further state that they classify a JavaScript file as a fingerprinter ``when it loads
+more than 30 fonts, enumerates plugins or mimeTypes, detects screen and navigator properties, and sends the
+collected data back to a remote server'' \cite{DBLP:conf/ccs/AcarJNDGPP13}.
+Englehardt and Narayanan present a metric to detect Canvas-based fingerprinting by specifying certain
+attributes such a Canvas, and the code using it, should have \cite{DBLP:conf/ccs/EnglehardtN16}.
+The above considerations form a good basis upon which to build a reliable metric, which will have to be
+evaluated further during the implementation process.
+
+\section{Scope}
+Finding or creating a single website which collects a fingerprint, and basing development of fingerprinting
+recognition on it, will not yield reliable or representative results. It is imperative to test
+the created recognition software against a multitude of fingerprinting libraries and users of these.
+It might be prudent to test the software against, say, the top 500 websites as ranked by
+Alexa\footnote{\url{http://www.alexa.com/topsites}}, as there is a high likelihood these sites employ
+a multitude of techniques to track their users, but there is no way to be sure if some of these sites wouldn't
+generate false positives.
+The safest way could be to create websites which employ an array of fingerprinting libraries both preexisting and
+implemented by the author, and then comparing the employed JavaScript calls with those from popular websites.
+
+\section{False Positives}
+Filtering false positives is a non-trivial problem in this context. Requesting fonts via JavaScript might be a dead giveaway
+that fingerprinting code is, in fact, fingerprinting code. However, it might cause legitimate code, such
+as a multimedia player, to be mistaken for fingerprinting code, as well, even though it has a legitimate
+reason and perhaps a necessity to know a system's installed fonts.
+Meta-data can be used to filter these; a list can be compiled of popular JavaScript libraries with legitimate,
+yet fingerprinting-like behavior, and then extended through analysis of collected data (see Technology below).
+
+% }}
+
+\begingroup
+\renewcommand{\cleardoublepage}{}
+\renewcommand{\clearpage}{}
+\chapter{Implementation} % {{
+\endgroup
 TODO: Something about PrivacyScore
 
-    \subsection{Technology}
+\section{Technology}
 
-    \begin{description}
-        \item[OpenWPM] \hfill \\
-            ``OpenWPM is a web privacy measurement framework which makes it easy to collect data for privacy studies on a scale
-            of thousands to millions of site''\footnote{\url{https://github.com/citp/OpenWPM}}.
-            The author is planning to build upon OpenWPM\cite{englehardt2016census} to create a software that can detect
-            browser fingerprinting. OpenWPM includes capabilities to record
-            ``all method calls (with arguments) and property accesses for APIs of potential fingerprinting interest'',
-            providing a good basis for data collection. Analyzing and interpreting this data in a meaningful way
-            will need to be implemented by the author.
+\subsection{OpenWPM}
+``OpenWPM is a web privacy measurement framework which makes it easy to collect data for privacy studies on a scale
+of thousands to millions of sites''\footnote{\url{https://github.com/citp/OpenWPM}}.
+The author is planning to build upon OpenWPM \cite{DBLP:conf/ccs/EnglehardtN16} to create a software that can detect
+browser fingerprinting. OpenWPM includes capabilities to record
+``all method calls (with arguments) and property accesses for APIs of potential fingerprinting interest'',
+providing a good basis for data collection. Analyzing and interpreting this data in a meaningful way
+will need to be implemented by the author, and go a long way towards creating a reliable software
+to detect fingerprinting.
 
-        \item[SQL] \hfill \\
-            Since OpenWPM produces Sqlite databases containing the results of its tests, a database will be used. It may prove useful
-            to import the resulting Sqlite databases into a more sophisticated system, such as PostgreSQL, perhaps merging them in a
-            meaningful way, and analyzing data not from a single website, but many, as one.
-    \end{description}
+\subsection{SQL}
+Since OpenWPM produces Sqlite databases containing the results of its tests, a database will be used. It may prove useful
+to import the resulting Sqlite databases into a more sophisticated system, such as PostgreSQL, perhaps merging them in a
+meaningful way, and analyzing data not from a single website, but many, as one.
+
+% }}
+
+\begingroup
+\renewcommand{\cleardoublepage}{}
+\renewcommand{\clearpage}{}
+\chapter{Schedule} % {{
+\endgroup
+Further in-depth research will have to be conducted in order to obtain a firmer grasp on the topic.
+The work will then have to follow an implement-evaluate-repeat pattern, and thus happen iteratively.
+It can be structured like so: first, implement a fingerprinting-detection algorithm.
+Then, evaluate its effectiveness by comparing it to other methods and perhaps analysing some sample-websites
+that employ fingerprinting. Then the algorithm must be tweaked and improved, and then evaluated again.
+The time table will look something like this:
+
+\begin{itemize}
+    \item
+        2-3 weeks: First implementation and tests in place
+    \item
+        5-6 weeks: Evaluation and improvement
+    \item
+        3-4 weeks: Writing the thesis paper
+\end{itemize}
+
+This time table leaves about a month of the 5 month period as a buffer, to allow for some
+deviation.
+
+% }}
 
 \clearpage
 
