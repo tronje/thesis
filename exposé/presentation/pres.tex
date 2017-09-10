@@ -1,0 +1,276 @@
+% rubber: shell_escape
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+
+%\usetheme{Berlin}
+%\usetheme{CambridgeUS}
+%\usetheme{Frankfurt}
+%\usetheme{Madrid}
+%\usetheme{Singapore}
+\usetheme{Dresden}
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Boadilla}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+% Colors
+
+%\usecolortheme{albatross}
+\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+% \usepackage[german,ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsmath}
+
+\usepackage{minted}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[BSc Thesis]{Browser Fingerprinting} 
+\author{Tronje Krabbe}
+\institute[UHH]
+{
+Uni Hamburg \\
+Working Group on Security and Privacy\\
+}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Overview}
+\tableofcontents
+\end{frame}
+
+%\AtBeginSection{
+%\begin{frame}
+%\frametitle{Overview} 
+%\tableofcontents[currentsection]
+%\end{frame}}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+\section{Browser Fingerprinting}
+%------------------------------------------------
+
+\subsection{}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{What is that?}
+    The average browser exposes enough information to construct
+    a `fingerprint', which can uniquely identify a user. Information used can be:
+    \begin{itemize}
+        \item user agent
+        \item installed fonts
+        \item GPU model/vendor
+        \item WebGL behavior
+        \item ...
+    \end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Why is it `bad'?}
+    \begin{itemize}
+        \item users are usually not made aware
+        \item more easily obfuscated than a cookie
+        \item cannot be easily avoided
+    \end{itemize}
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{cookies.png}
+    \caption{Reddit.com's cookie warning}
+    \end{figure}
+
+\end{frame}
+
+%------------------------------------------------
+
+\section{Thesis}
+\subsection{}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Thesis}
+    Develop a software that can reliably detect whether a website employs fingerprinting,
+    and integrate it into PrivacyScore.org
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{How?}
+    Simply record all JavaScript function calls, and see if it looks like a fingerprint is being
+    constructed.
+\end{frame}
+
+%------------------------------------------------
+
+\section{Considerations}
+\subsection{}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Identify most commonly used fingerprinting methodologies}
+    \begin{itemize}
+        \item Flash can be used, but will that's unlikely
+        \item fonts and WebGL are popular, what about e.g. sound?
+        \item how likely will these continue to be used?
+    \end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Identify most commonly used libraries}
+    \begin{itemize}
+        \item could be mostly in-house libs $\rightarrow$ pretty much useless
+        \item JavaScript is easily obfuscated
+    \end{itemize}
+    
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{False Positives}
+    JavaScript calls that look like they're constructing a fingerprint may also be
+    used for a completely different cause. Recall:
+    \begin{itemize}
+        \item user agent
+        \item installed fonts
+        \item GPU model/vendor
+        \item WebGL behavior
+        \item ...
+    \end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Metric or Scoring System}
+    Instead of reporting \textbf{``yes, fingerprinting is going on!''} \\
+    or \textbf{``no, fingerprinting is not going on!''}, give a score
+    to represent a likelihood.
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Performance}
+    \begin{itemize}
+        \item efficient algorithm
+        \item language choice
+        \begin{itemize}
+            \item Python
+            \begin{itemize}
+                \item slow
+                \item OpenWPM \& PrivacyScore are written in Python
+            \end{itemize}
+            \item C++, Rust
+            \begin{itemize}
+                \item hard to integrate
+                \item more complicated than Python
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\section{Schedule}
+\subsection{}
+
+%------------------------------------------------
+
+\begin{frame}
+    \frametitle{Schedule}
+    \scriptsize
+    \textit{``The first 90 percent of the code accounts for the first 90 percent of the development time. The remaining 10 percent of the code accounts for the other 90 percent of the development time.''} - Tom Cargill, Bell Labs
+    \\
+    \normalsize
+    \begin{itemize}
+        \item 3 weeks: first implementation and tests in place
+        \item 6 weeks: evaluation and improvements
+        \item 4 weeks: writing the actual thesis paper
+    \end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\section{}
+\begin{frame}[c]
+    \begin{center}
+    \Huge Thank you!
+    \end{center}
+\end{frame}
+
+%------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
