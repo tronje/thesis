@@ -1,5 +1,3 @@
-% rubber: shell_escape
-
 %----------------------------------------------------------------------------------------
 %	PACKAGES AND THEMES
 %----------------------------------------------------------------------------------------
@@ -8,54 +6,12 @@
 
 \mode<presentation> {
 
-%\usetheme{Berlin}
-%\usetheme{CambridgeUS}
-%\usetheme{Frankfurt}
-%\usetheme{Madrid}
-%\usetheme{Singapore}
 \usetheme{Dresden}
 
-%\usetheme{default}
-%\usetheme{AnnArbor}
-%\usetheme{Antibes}
-%\usetheme{Bergen}
-%\usetheme{Berkeley}
-%\usetheme{Boadilla}
-%\usetheme{Copenhagen}
-%\usetheme{Darmstadt}
-%\usetheme{Goettingen}
-%\usetheme{Hannover}
-%\usetheme{Ilmenau}
-%\usetheme{JuanLesPins}
-%\usetheme{Luebeck}
-%\usetheme{Malmoe}
-%\usetheme{Marburg}
-%\usetheme{Montpellier}
-%\usetheme{PaloAlto}
-%\usetheme{Pittsburgh}
-%\usetheme{Rochester}
-%\usetheme{Szeged}
-%\usetheme{Warsaw}
 
 % Colors
 
-%\usecolortheme{albatross}
 \usecolortheme{beaver}
-%\usecolortheme{beetle}
-%\usecolortheme{crane}
-%\usecolortheme{dolphin}
-%\usecolortheme{dove}
-%\usecolortheme{fly}
-%\usecolortheme{lily}
-%\usecolortheme{orchid}
-%\usecolortheme{rose}
-%\usecolortheme{seagull}
-%\usecolortheme{seahorse}
-%\usecolortheme{whale}
-%\usecolortheme{wolverine}
-
-%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
-%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
 
 \setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
 }
@@ -68,8 +24,6 @@
 \usepackage{mathtools}
 \usepackage{amsmath}
 
-\usepackage{minted}
-
 \usepackage{graphicx} % Allows including images
 \usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
 
@@ -78,7 +32,7 @@
 %----------------------------------------------------------------------------------------
 
 \title[BSc Thesis]{Browser Fingerprinting} 
-\author{Tronje Krabbe}
+\author[Tronje Krabbe]{Tronje Krabbe\newline\url{tronje@informatik.uni-hamburg.de}}
 \institute[UHH]
 {
 Uni Hamburg \\
@@ -177,9 +131,10 @@ Working Group on Security and Privacy\\
 \begin{frame}
     \frametitle{Identify most commonly used fingerprinting methodologies}
     \begin{itemize}
-        \item Flash can be used, but will that's unlikely
+        \item Flash can be used, but unlikely to be widespread
         \item fonts and WebGL are popular, what about e.g. sound?
         \item how likely will these continue to be used?
+        \item JavaScript and WebGL best candidates
     \end{itemize}
 \end{frame}
 
@@ -188,6 +143,7 @@ Working Group on Security and Privacy\\
 \begin{frame}
     \frametitle{Identify most commonly used libraries}
     \begin{itemize}
+        \item site that uses a common library is easily `convicted'
         \item could be mostly in-house libs $\rightarrow$ pretty much useless
         \item JavaScript is easily obfuscated
     \end{itemize}
@@ -212,7 +168,7 @@ Working Group on Security and Privacy\\
 %------------------------------------------------
 
 \begin{frame}
-    \frametitle{Metric or Scoring System}
+    \frametitle{Scoring System}
     Instead of reporting \textbf{``yes, fingerprinting is going on!''} \\
     or \textbf{``no, fingerprinting is not going on!''}, give a score
     to represent a likelihood.
@@ -254,9 +210,10 @@ Working Group on Security and Privacy\\
     \\
     \normalsize
     \begin{itemize}
-        \item 3 weeks: first implementation and tests in place
+        \item 4 weeks: first implementation and tests in place
         \item 6 weeks: evaluation and improvements
         \item 4 weeks: writing the actual thesis paper
+        \item about 1 month to spare
     \end{itemize}
 \end{frame}
 

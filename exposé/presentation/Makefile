@@ -7,7 +7,7 @@ default: $(NAME).pdf show
 
 # build our pdf
 $(NAME).pdf: $(NAME).tex
-	rubber --pdf --unsafe $(NAME)
+	rubber --pdf $(NAME)
 
 # simply build the pdf without showing it
 # this target is for convenience, allowing to type `make pdf`
