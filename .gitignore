@@ -1,5 +1,7 @@
+*.ldb
+*.sqlite
 
-# Created by https://www.gitignore.io/api/latex,python
+# The below was created by https://www.gitignore.io/api/latex,python
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
