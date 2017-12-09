@@ -1,0 +1,6 @@
+[submodule "bin/OpenWPM"]
+	path = bin/OpenWPM
+	url = git@github.com:citp/OpenWPM.git
+[submodule "bin/PrivacyScore"]
+	path = bin/PrivacyScore
+	url = git@github.com:PrivacyScore/PrivacyScore.git
