@@ -1,0 +1,27 @@
+{
+    "extension_enabled": true,
+    "cookie_instrument": false,
+    "js_instrument": true,
+    "cp_instrument": true,
+    "http_instrument": true,
+    "save_javascript": true,
+    "save_all_content": false,
+
+    "random_attributes": false,
+    "bot_mitigation": false,
+    "disable_flash": true,
+    "profile_tar": null,
+    "profile_archive_dir": null,
+    "headless": true,
+    "browser": "firefox",
+    "prefs": {},
+
+    "tp_cookies": "always",
+    "donottrack": false,
+    "disconnect": false,
+    "ghostery": false,
+    "https-everywhere": false,
+    "adblock-plus": false,
+    "ublock-origin": false,
+    "tracking-protection": false
+}
