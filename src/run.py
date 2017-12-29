@@ -27,15 +27,30 @@ def determine_canvas_size(table_name, original_url, **kwargs):
 
     query = ("CREATE TABLE IF NOT EXISTS %s ("
             "id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,"
+            "crawl_id INTEGER,"
+            "site_url TEXT,"
             "width INTEGER,"
             "height INTEGER,"
-            "crawl_id INTEGER,"
-            "site_url TEXT" % table_name)
+            "is_displayed INTEGER" % table_name)
 
-    sock.send(query, ())
+    sock.send((query, ()))
 
-    query = ("INSERT INTO %s (width, height, crawl_id, site_url) "
-            "VALUES (?, ?)" % table_name)
+    canvases = driver.find_elements_by_tag_name('canvas')
+
+    for canvas in canvases:
+        size = canvas.size
+        print size
+
+        width = 0
+        height = 0
+        displayed = 1 if canvas.is_displayed() else 0
+
+        query = ("INSERT INTO %s (crawl_id, site_url, width, height, is_displayed) "
+                "VALUES (?, ?, ?, ?, ?)" % table_name)
+
+        sock.send((query, (crawl_id, current_url, width, height, displayed)))
+
+    sock.close()
 
 
 def crawl():
