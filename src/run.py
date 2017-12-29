@@ -17,9 +17,9 @@ NUM_BROWSERS = 4
 
 def determine_canvas_size(table_name, original_url, **kwargs):
     driver = kwargs['driver']
-    print(driver)
-    sys.exit(1)
+    browser_params = kwargs['browser_params']
     manager_params = kwargs['manager_params']
+    crawl_id = browser_params['crawl_id']
     current_url = driver.current_url
 
     sock = clientsocket()
@@ -29,13 +29,19 @@ def determine_canvas_size(table_name, original_url, **kwargs):
             "id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,"
             "width INTEGER,"
             "height INTEGER,"
-            "FOREIGN KEY(visit_id) REFERENCES site_visits(visit_id)" % table_name)
+            "crawl_id INTEGER,"
+            "site_url TEXT" % table_name)
+
+    sock.send(query, ())
+
+    query = ("INSERT INTO %s (width, height, crawl_id, site_url) "
+            "VALUES (?, ?)" % table_name)
 
 
 def crawl():
     # sites to crawl
     sites = []
-    with open("/home/tronje/data/top-1m.txt", "r") as sitelist:
+    with open("/home/tronje/thesis/data/top-1m.txt", "r") as sitelist:
         for site in sitelist:
             sites.append(site.strip())
             if len(sites) == NUM_SITES:
