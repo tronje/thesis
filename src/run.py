@@ -26,23 +26,20 @@ def determine_canvas_size(table_name, original_url, **kwargs):
     sock.connect(*manager_params['aggregator_address'])
 
     query = ("CREATE TABLE IF NOT EXISTS %s ("
-            "id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,"
-            "crawl_id INTEGER,"
-            "site_url TEXT,"
-            "width INTEGER,"
-            "height INTEGER,"
-            "is_displayed INTEGER" % table_name)
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "crawl_id INTEGER, "
+            "site_url TEXT, "
+            "width INTEGER, "
+            "height INTEGER, "
+            "is_displayed INTEGER)" % table_name)
 
     sock.send((query, ()))
 
     canvases = driver.find_elements_by_tag_name('canvas')
 
     for canvas in canvases:
-        size = canvas.size
-        print size
-
-        width = 0
-        height = 0
+        width = canvas.size['width']
+        height = canvas.size['height']
         displayed = 1 if canvas.is_displayed() else 0
 
         query = ("INSERT INTO %s (crawl_id, site_url, width, height, is_displayed) "
