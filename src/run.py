@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import datetime
-
 from __future__ import absolute_import
 
 from automation import TaskManager
 from automation import CommandSequence
 from automation.SocketInterface import clientsocket
+
+import datetime
 
 # The number of sites that we wish to crawl
 NUM_SITES = 2000
