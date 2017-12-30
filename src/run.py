@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 
+import datetime
+
 from __future__ import absolute_import
 
 from automation import TaskManager
 from automation import CommandSequence
 from automation.SocketInterface import clientsocket
 
-import sys
-
 # The number of sites that we wish to crawl
-NUM_SITES = 1000
+NUM_SITES = 2000
 
 # number of browsers (visits) per site
 NUM_BROWSERS = 4
 
 
-def determine_canvas_size(table_name, original_url, **kwargs):
+def determine_canvas_properties(table_name, original_url, **kwargs):
     driver = kwargs['driver']
     browser_params = kwargs['browser_params']
     manager_params = kwargs['manager_params']
     crawl_id = browser_params['crawl_id']
-    current_url = driver.current_url
 
     sock = clientsocket()
     sock.connect(*manager_params['aggregator_address'])
@@ -48,7 +47,7 @@ def determine_canvas_size(table_name, original_url, **kwargs):
         sock.send((
                 query,
                 (int(crawl_id),
-                 current_url,
+                 original_url,
                  int(width),
                  int(height),
                  int(displayed))
@@ -69,9 +68,21 @@ def crawl():
     # Loads the manager preference and n copies of the default browser dictionaries
     manager_params, browser_params = TaskManager.load_default_params(NUM_BROWSERS)
 
+    # customize browser parameters
+    for i in range(NUM_BROWSERS):
+        browser_params[i]['disable_flash'] = True
+        browser_params[i]['headless'] = True
+        browser_params[i]['bot_mitigation'] = True
+        browser_params[i]['http_instrument'] = True
+        browser_params[i]['js_instrument'] = True
+
     # Update TaskManager configuration (use this for crawl-wide settings)
     manager_params['data_directory'] = '~/data/'
     manager_params['log_directory'] = '~/data/'
+
+    db_name = 'crawl-data-' + str(datetime.date.today()) + '.sqlite3'
+
+    manager_params['database_name'] = db_name
 
     # Instantiates the measurement platform
     # Commands time out by default after 60 seconds
@@ -82,9 +93,9 @@ def crawl():
         command_sequence = CommandSequence.CommandSequence(site)
 
         # Start by visiting the page
-        command_sequence.get(sleep=5, timeout=60)
+        command_sequence.get(sleep=10, timeout=60)
 
-        command_sequence.run_custom_function(determine_canvas_size, ('canvases', site))
+        command_sequence.run_custom_function(determine_canvas_properties, ('canvases', site))
 
         # dump_profile_cookies/dump_flash_cookies closes the current tab.
         command_sequence.dump_profile_cookies(120)
