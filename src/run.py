@@ -80,7 +80,8 @@ def crawl():
     manager_params['data_directory'] = '~/data/'
     manager_params['log_directory'] = '~/data/'
 
-    db_name = 'crawl-data-' + str(datetime.date.today()) + '.sqlite3'
+    timestamp = datetime.datetime.now().strftime("%y-%m-%d-%H%M")
+    db_name = 'crawl-data-' + timestamp + '.sqlite3'
 
     manager_params['database_name'] = db_name
 
