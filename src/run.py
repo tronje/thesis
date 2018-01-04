@@ -56,15 +56,7 @@ def determine_canvas_properties(table_name, original_url, **kwargs):
     sock.close()
 
 
-def crawl():
-    # sites to crawl
-    sites = []
-    with open("/home/tronje/thesis/data/top-1m.txt", "r") as sitelist:
-        for site in sitelist:
-            sites.append(site.strip())
-            if len(sites) == NUM_SITES:
-                break
-
+def crawl(sites):
     # Loads the manager preference and n copies of the default browser dictionaries
     manager_params, browser_params = TaskManager.load_default_params(NUM_BROWSERS)
 
@@ -108,5 +100,17 @@ def crawl():
     manager.close()
 
 
+def run(filename):
+    # sites to crawl
+    sites = []
+    with open(filename, "r") as sitelist:
+        for site in sitelist:
+            sites.append(site.strip())
+            if len(sites) == NUM_SITES:
+                break
+
+    crawl(sites)
+
+
 if __name__ == "__main__":
-    crawl()
+    run("/home/tronje/thesis/data/top-1m.txt")
