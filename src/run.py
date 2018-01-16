@@ -64,9 +64,10 @@ def crawl(sites):
     for i in range(NUM_BROWSERS):
         browser_params[i]['disable_flash'] = True
         browser_params[i]['headless'] = True
-        browser_params[i]['bot_mitigation'] = True
+        browser_params[i]['bot_mitigation'] = False
         browser_params[i]['http_instrument'] = True
         browser_params[i]['js_instrument'] = True
+        browser_params[i]['headless'] = True
 
     # Update TaskManager configuration (use this for crawl-wide settings)
     manager_params['data_directory'] = '~/data/'
