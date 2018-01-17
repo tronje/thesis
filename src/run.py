@@ -57,48 +57,58 @@ def determine_canvas_properties(table_name, original_url, **kwargs):
 
 
 def crawl(sites):
-    # Loads the manager preference and n copies of the default browser dictionaries
-    manager_params, browser_params = TaskManager.load_default_params(NUM_BROWSERS)
+    current_site = None
 
-    # customize browser parameters
-    for i in range(NUM_BROWSERS):
-        browser_params[i]['disable_flash'] = True
-        browser_params[i]['headless'] = True
-        browser_params[i]['bot_mitigation'] = False
-        browser_params[i]['http_instrument'] = True
-        browser_params[i]['js_instrument'] = True
-        browser_params[i]['headless'] = True
+    try:
+        # Loads the manager preference and n copies of the default browser dictionaries
+        manager_params, browser_params = TaskManager.load_default_params(NUM_BROWSERS)
 
-    # Update TaskManager configuration (use this for crawl-wide settings)
-    manager_params['data_directory'] = '~/data/'
-    manager_params['log_directory'] = '~/data/'
+        # customize browser parameters
+        for i in range(NUM_BROWSERS):
+            browser_params[i]['disable_flash'] = True
+            browser_params[i]['headless'] = True
+            browser_params[i]['bot_mitigation'] = False
+            browser_params[i]['http_instrument'] = True
+            browser_params[i]['js_instrument'] = True
+            browser_params[i]['headless'] = True
 
-    timestamp = datetime.datetime.now().strftime("%y-%m-%d-%H%M")
-    db_name = 'crawl-data-' + timestamp + '.sqlite3'
+        # Update TaskManager configuration (use this for crawl-wide settings)
+        manager_params['data_directory'] = '~/data/'
+        manager_params['log_directory'] = '~/data/'
 
-    manager_params['database_name'] = db_name
+        timestamp = datetime.datetime.now().strftime("%y-%m-%d-%H%M")
+        db_name = 'crawl-data-' + timestamp + '.sqlite3'
 
-    # Instantiates the measurement platform
-    # Commands time out by default after 60 seconds
-    manager = TaskManager.TaskManager(manager_params, browser_params)
+        manager_params['database_name'] = db_name
 
-    # Visits the sites with all browsers simultaneously
-    for site in sites:
-        command_sequence = CommandSequence.CommandSequence(site)
+        # Instantiates the measurement platform
+        # Commands time out by default after 60 seconds
+        manager = TaskManager.TaskManager(manager_params, browser_params)
 
-        # Start by visiting the page
-        command_sequence.get(sleep=10, timeout=60)
+        # Visits the sites with all browsers simultaneously
+        for site in sites:
+            current_site = site
 
-        command_sequence.run_custom_function(determine_canvas_properties, ('canvases', site))
+            command_sequence = CommandSequence.CommandSequence(site)
 
-        # dump_profile_cookies/dump_flash_cookies closes the current tab.
-        command_sequence.dump_profile_cookies(120)
+            # Start by visiting the page
+            command_sequence.get(sleep=10, timeout=60)
 
-        # index='**' synchronizes visits between the three browsers
-        manager.execute_command_sequence(command_sequence, index='**')
+            command_sequence.run_custom_function(determine_canvas_properties, ('canvases', site))
 
-    # Shuts down the browsers and waits for the data to finish logging
-    manager.close()
+            # dump_profile_cookies/dump_flash_cookies closes the current tab.
+            command_sequence.dump_profile_cookies(120)
+
+            # index=None sends the command to the first available browser
+            # index='*' sends command to all browsers
+            # index='**' synchronizes visits between all browsers
+            manager.execute_command_sequence(command_sequence, index=None)
+
+        # Shuts down the browsers and waits for the data to finish logging
+        manager.close()
+    except Exception as e:
+        print(e)
+        return current_site
 
 
 def run(filename):
@@ -110,7 +120,15 @@ def run(filename):
             if len(sites) == NUM_SITES:
                 break
 
-    crawl(sites)
+    # if we fail at a certain site, we remove it from the list and try again
+    while True:
+        failed_site = crawl(sites)
+
+        if failed_site is None:
+            break
+
+        failed_idx = sites.index(failed_site)
+        sites = sites[(failed_idx + 1):]
 
 
 if __name__ == "__main__":
