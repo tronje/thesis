@@ -1,7 +1,18 @@
-* get canvas properties with selenium (`run_custom_function` in OpenWPM)
-    * look at PrivacyScore for examples
-* analyze some sites by hand
-* write an introduction!
-* crawl more sites?
-* write to englehardt to get code
-* google recaptcha
+# misc
+
+* 'font' never appears without 'Canvas' in symbol
+* 'language' only ever appears as property of 'window.navigator'
+* no plugins?
+* cookies enabled? 'window.navigator.cookieEnabled'
+* window.localStorage vs window.Storage ???
+* OpenWPM doesn't log getting of WebGL Vendor or Renderer
+* detect adblock detection: how?
+* magic string `mmmmmmmmmmlli` <- wat?
+* wpemojiSettings -> uses todataurl to determine emoji support, it seems.
+* "Cwm fjordbank glyphs vext quiz, 😃" -> very popular fingerprinting pangram
+* Tor-Browser can't recognize non-fingerprinting use of `toDataURL`
+* how to distinguish fingerprinters from users of third-party content like a Like-button, etc.?
+
+# scripts
+* 'http://eyenewton.ru/scripts/callback.min.js' uses Fingerprintjs2
+    * because we can also see the 'getHasLied<something>' function names
