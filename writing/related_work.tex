@@ -1,0 +1,263 @@
+\documentclass[
+    fontsize=12pt,
+    headings=small,
+    parskip=half,
+    bibliography=totoc,
+    numbers=noenddot,
+    open=any
+]{scrreprt}
+
+\usepackage[utf8]{inputenc}
+\usepackage{datetime2}
+\DTMlangsetup[en-US]{abbr}
+
+\usepackage[titletoc,title]{appendix}
+
+\usepackage[
+    autostyle,
+    ]{csquotes}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage[table]{xcolor}
+\usepackage{marvosym}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{acronym}
+% \usepackage{float}
+\usepackage[scaled=.92]{helvet}
+\usepackage{courier}
+\usepackage[
+    a4paper,
+    margin=2.54cm,
+    marginparwidth=2.0cm,
+    footskip=1.0cm
+]{geometry}
+
+\usepackage[
+    url=true,
+    style=numeric,
+    alldates=long,
+    dateabbrev=false
+]{biblatex}
+
+\addbibresource{literature.bib}
+
+% \pagestyle{plain}
+\urlstyle{rm}
+
+\definecolor{hlinegray}{gray}{0.8}
+
+\newcommand{\cmark}{\textcolor{green}{\ding{51}}}
+% \newcommand{\xmark}{\textcolor{red}{\ding{55}}}
+\newcommand{\xmark}{\textcolor{red}{-}}
+\newcommand{\qmark}{\textcolor{orange}{\textbf{?}}}
+
+\title{Related Work}
+
+\author{Tronje Krabbe}
+
+\date{\today}
+
+\begin{document}
+\hypersetup{hidelinks}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\chapter{Related Work}
+This chapter will give an overview of previous works. It is split into two sections.
+The first section presents existing work on the topic of fingerprinting. The second one will show existing work on
+the detection of fingerprinting.
+
+\section{Browser Fingerprinting}
+There are closed-source implementations of browser/device fingerprinting. These are unavailable to us.
+However, we can turn to several open-source projects which implement fingerprinting for deeper insights into this technology,
+and to learn how we may be able to identify these closed implementations.
+
+Essentially, fingerprinting works by combining data available to front-end JavaScript code into a string,
+usually by hashing some data structures. This string is the fingerprint.
+Different fingerprinting methods can be distinguished by the different attributes they use to construct their fingerprint.
+
+For instance, one of the attributes providing the most entropy, is acquired by so-called canvas fingerprinting, which works by drawing
+several symbols like geometric shapes, emoji, and so on, on an HTML5 canvas element \cite{laperdrix2016beauty}.
+Usually, letters, words, or whole sentences are also written onto the canvas, oftentimes with multiple different fonts.
+The resulting image can be serialized into a representation that can be included in the aforementioned fingerprint string.
+The fingerprint contains information about the host OS, and the hardware on which it runs.
+
+For a concrete example, \textit{Am I Unique?} writes the same pangram\footnote{A sentence containing every letter of the alphabet.}
+twice onto the canvas, using two different fonts, and each time followed by a special unicode character, an emoji.
+Finally, a rectangle in a specific color is drawn \cite{laperdrix2016beauty}.
+
+So, while different fingerprinting scripts are all likely to use canvas fingerprinting, they can differ in the exact
+method they use to create the canvas-related aspect of the fingerprint.
+
+The methods described in this section can shed some light onto the different attributes used, and their computation,
+and how much entropy each can contribute to a fingerprint.
+
+We have compiled an overview of which attributes are used by which implementation in Appendix \ref{app:table}.
+
+
+\subsection{Am I Unique?}
+\textit{Am I Unique?}\footnote{\url{https://amiunique.org}} \cite{laperdrix2016beauty} is a web service which creates
+a fingerprint with the press of a button. Its purpose is to educate users about fingerprinting
+\textit{Am I Unique?} borrows part of its JavaScript fingerprinting code from
+Fingerprintjs2\footnote{\url{https://github.com/DIVERSIFY-project/amiunique/blob/master/website/public/javascripts/webGL.js\#L2}},
+which is discussed below.
+
+
+% FIXME there's a new version of Panopticlick that was released after the paper. Does it include canvas fingerprinting?
+\subsection{Panopticlick}
+The EFF's Panopticlick project is similar to \textit{Am I Unique?}, in that it aims to learn and inform about
+fingerprinting. It also offers a way to test any tracking protection a user may have enabled by simulating
+tracking domains \cite{panopticlick}. The attributes used by Panopticlick to construct a fingerprint differ slightly from those used by
+\textit{Am I Unique?}, though overall, they are similar.
+
+Eckersley showed that the list of installed fonts and the list of installed plugins are the most identifying properties
+\cite{eckersley2010unique}. This finding, however, did not yet take canvas fingerprinting into consideration.
+
+
+\subsection{Fingerprintjs2}
+Fingerprintjs2 \cite{fingerprintjs2} is a popular\footnote{4891 stars and 712 forks on GitHub. Visited on Febuary 4, 2018}
+JavaScript program that can be used to easily construct a fingerprint.
+It uses a larger variety of attributes when compared to the two previously mentioned services by default, though this is configurable.
+
+A crawl from January 27, 2018, of 4929 sites shows that 336 sites use Fingerprintjs2, for a percentage of about 6.82\%.
+This number was found by simply querying the database for function names that are consistent with
+those used in Fingerprintjs2, and therefore do not include sites which use an obfuscated Fingerprintjs2.
+Fingerprintjs2 has a few functions starting with the prefix \textit{getHasLied}, like \textit{getHasLiedOs}, the purpose
+of which is to report whether a browser tampered with certain information, for instance in the interest of mitigating
+fingerprinting\footnote{\url{https://github.com/Valve/fingerprintjs2/wiki/Browser-tampering}, visited on Febuary 8, 2018}.
+Due to the peculiar name choice, and the fact that the same sites that call one \textit{getHasLied}
+function also call all others, we can be quite certain that they all include Fingerprintjs2.
+
+
+\section{Browser Fingerprinting Detection}
+At a basic level, in order to detect fingerprinting, all JavaScript calls to the relevant attributes,
+like User Agent, HTML5CanvasElement, and so on, need to be recorded. Then, a decision can be made about whether the number
+of calls is suspicious, or constitutes normal website behavior.
+
+However, since these attributes also have legitimate uses, this is not a trivial task.
+This section will present previous work on this topic.
+
+
+\subsection{FPDetective}
+Acar et al. provide some useful metrics to differentiate between fingerprinting and legitimate use of
+browser attributes \cite{DBLP:conf/ccs/AcarJNDGPP13}. They have implemented a fingerprinting-detection
+framework called \textit{FPDetective}. \textit{FPDetective} focuses on font-based fingerprinting, and uses
+\textit{PhantomJS} and \textit{Chromium} to crawl the web and log JavaScript and Flash actions.
+Popular attributes like the HTML5 Canvas and WebGL were ignored in the study and by the framework's logging.
+
+Partly automated, their process also included manual analysis of scripts and decompiled Flash sources.
+
+\textit{FPDetective} classifies a script as a fingerprinter if ``it loads more than 30 system fonts, enumerates plugins
+or mimeTypes, detects screen and navigator properties, and sends the collected data back to a remote server''
+\cite{DBLP:conf/ccs/AcarJNDGPP13}.
+
+
+\subsection{OpenWPM - 1 million site study}
+Englehardt et al. have developed a framework called \textit{OpenWPM}, which can be used to analyze the way a website
+handles users' privacy. They have used this to analyse the tracking behavior of one million websites.
+\cite{DBLP:conf/ccs/EnglehardtN16,englehardt2016census}.
+
+Englehardt et al. differentiate between distinct forms of fingerprinting.
+They classify a script as a canvas-fingerprinter, if a there is a canvas larger than 16 by 16 pixels, and text is
+written to it in either at least two different colors, or with 10 distinct characters. Then, certain functions
+must and must not be called on the object. Their findings show that only about 1.6\% of the analyzed sites
+employ canvas-based fingerprinting.
+
+Their work also examines new, previously unknown methods of fingerprinting, such as canvas font fingerprinting, which
+works by rendering text in a large number of different fonts on a canvas element; WebRTC-based fingerprinting, which,
+as the name suggests, abuses the WebRTC framework; as well as AudioContext fingerprinting, and Battery API fingerprinting.
+
+OpenWPM uses Firefox, Selenium, and custom JavaScript injected into loaded sites to log calls to relevant browser attributes.
+It constitutes the technological basis of this thesis' work, as it allows easy crawling of websites, while recording
+most if not all relevant information.
+
+
+\subsection{Tor Browser}
+\textit{The Design and Implementation of the Tor Browser [DRAFT]}\footnote{\url{https://www.torproject.org/projects/torbrowser/design/}. Visited on Febuary 8, 2018}
+states that ``[the authors] believe that the HTML5 Canvas is the single largest fingerprinting threat browsers face today'',
+As a canvas offers easy and high-entropy fingerprinting \cite{acar2014web,mowery2012pixel}.
+
+
+\begin{appendices}
+
+\chapter{Fingerprinting Attributes}
+\label{app:table}
+
+The table below shows which of the presented fingerprinting services/libraries use which attributes of the
+browser \cite{am_i_unique,panopticlick,fingerprintjs2}.
+
+\begin{tabular}{ l c c c }
+    \arrayrulecolor{hlinegray}
+
+    & Am I Unique? & Panopticlick & Fingerprintjs2 \\
+    \hline
+    User Agent & \cmark & \cmark & \cmark \\
+    \hline
+    Accept Header & \cmark & \cmark & \xmark \\
+    \hline
+    Content Encoding & \cmark & \xmark & \xmark \\
+    \hline
+    Content Language & \cmark & \xmark & \xmark \\
+    \hline
+    List of plugins & \cmark & \cmark & \cmark \\
+    \hline
+    Cookies enabled? & \cmark & \cmark & \xmark \\
+    \hline
+    Local storage available? & \cmark & \xmark & \cmark \\
+    \hline
+    Session storage available? & \cmark & \xmark & \cmark \\
+    \hline
+    Timezone & \cmark & \cmark & \cmark \\
+    \hline
+    Screen resolution & \cmark & \cmark & \cmark \\
+    \hline
+    Screen color depth & \cmark & \cmark & \cmark \\
+    \hline
+    List of fonts & \cmark & \cmark & \cmark \\
+    \hline
+    List of HTTP headers & \cmark & \xmark & \xmark \\
+    \hline
+    Platform & \cmark & \cmark & \cmark \\
+    \hline
+    Do Not Track Header present? & \cmark & \cmark & \cmark \\
+    \hline
+    Canvas & \cmark & \cmark & \cmark \\
+    \hline
+    WebGL & \cmark & \cmark & \cmark \\
+    \hline
+    WebGL Vendor & \cmark & \xmark & \cmark \\
+    \hline
+    WebGL Renderer & \cmark & \cmark & \cmark \\
+    \hline
+    Use of an adblocker & \cmark & \xmark & \cmark \\
+    \hline
+    JavaScript allowed? & \xmark & \cmark & \xmark \\
+    \hline
+    System Language & \xmark & \cmark & \cmark \\
+    \hline
+    Touchscreen support & \xmark & \cmark & \cmark \\
+    \hline
+    IndexedDB available? & \xmark & \xmark & \cmark \\
+    \hline
+    Open DB? & \xmark & \xmark & \cmark \\
+    \hline
+    CPU class & \xmark & \xmark & \cmark \\
+    \hline
+    Available processors & \xmark & \xmark & \cmark \\
+    \hline
+    Device memory & \xmark & \xmark & \cmark \\
+    \hline
+\end{tabular}
+
+\end{appendices}
+
+\clearpage
+
+\printbibliography
+
+\end{document}

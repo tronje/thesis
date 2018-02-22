@@ -1,0 +1,233 @@
+% rubber: setlist arguments --shell-escape
+
+\documentclass[
+    fontsize=12pt,
+    headings=small,
+    parskip=half,
+    bibliography=totoc,
+    numbers=noenddot,
+    open=any
+]{scrreprt}
+
+\usepackage[utf8]{inputenc}
+\usepackage{datetime2}
+\DTMlangsetup[en-US]{abbr}
+
+\usepackage[titletoc,title]{appendix}
+
+\usepackage[
+    autostyle,
+    ]{csquotes}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage[table]{xcolor}
+\usepackage{marvosym}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{acronym}
+% \usepackage{float}
+\usepackage[scaled=.92]{helvet}
+\usepackage{courier}
+\usepackage[
+    a4paper,
+    margin=2.54cm,
+    marginparwidth=2.0cm,
+    footskip=1.0cm
+]{geometry}
+
+\usepackage[
+    url=true,
+    style=numeric,
+    alldates=long,
+    dateabbrev=false
+]{biblatex}
+
+\usepackage{minted}
+
+\addbibresource{literature.bib}
+
+% \pagestyle{plain}
+\urlstyle{rm}
+
+\definecolor{hlinegray}{gray}{0.8}
+
+\newcommand{\cmark}{\textcolor{green}{\ding{51}}}
+% \newcommand{\xmark}{\textcolor{red}{\ding{55}}}
+\newcommand{\xmark}{\textcolor{red}{-}}
+\newcommand{\qmark}{\textcolor{orange}{\textbf{?}}}
+
+\title{Data}
+
+\author{Tronje Krabbe}
+
+\date{\today}
+
+\begin{document}
+\hypersetup{hidelinks}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\chapter{Data Acquisition and Analysis}
+This chapter presents the dataset used to conduct the experiments used in this thesis. We will describe
+how the data was acquired, as well as some basic properties of the set.
+
+\section{Acquiring Site Information}
+As previously mentioned, we used OpenWPM\footnote{\url{https://github.com/citp/OpenWPM}} to gather data about
+website behavior. OpenWPM visits websites with a Firefox browser instance, and records all JavaScript accesses to
+attributes that may be used for fingerprinting, as well as other information, like HTTP headers, etc.
+
+The parameters used with OpenWPM to gather the data can be found in Appendix~\ref{app:params}.
+
+\subsection{Alex Top One Million List}
+Alex regularly compiles a list of the top one million websites, ordered by the number of
+visitors\footnote{\url{https://www.alexa.com/topsites}}.
+We have analyzed the top 5000 websites, as described by a version of this list acquired from
+\url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip} on December 19, 2017.
+
+
+\subsection{Datasets}
+Multiple datasets were gathered, all for the 5000 sites as described previously. Due to timeouts, or other
+errors, not all 5000 sites were actually crawled each time.
+The primary dataset we used was crawled on January 27, 2018, and includes 4929 sites with distinct URLs. Some of these sites
+may be duplicates of each other. For instance, the URL \url{https://fbcdn.net/} for Facebook's content delivery
+network simply points to \url{https://facebook.com/}, both of which are included in the dataset.
+
+
+\section{Data Properties}
+In this section, we will give an overview of basic properties of the primary dataset, with special regard to
+their relevance for fingerprinting.
+
+\subsection{Overview}
+The table below shows some interesting, basic properties of our primary dataset. Percentages have been rounded.
+
+\definecolor{hlinegray}{gray}{0.8}
+\begin{center}
+\begin{tabular}{l r r}
+\arrayrulecolor{hlinegray}
+    & amount & percentage \\
+    \hline
+    All sites & 4929 & 100\% \\
+    \hline
+    \\
+    \textit{basic attributes} & & \\
+    \hline
+    \texttt{userAgent} lookup & 4424 & 90\% \\ %89.8
+    \hline
+    \texttt{language} or \texttt{languages} lookup & 3985 & 81\% \\ %80.8
+    \hline
+    \texttt{colorDepth} lookup & 3931 & 80\% \\ %79.8
+    \hline
+    \texttt{localStorage} lookup & 3772 & 77\% \\
+    \hline
+    \texttt{platform} lookup & 3275 & 66\% \\ %66.4
+    \hline
+    \texttt{sessionStorage} lookup & 2860 & 58\% \\
+    \hline
+    \texttt{cookieEnabled} lookup & 2823 & 57\% \\ %57.3
+    \hline
+    \texttt{doNotTrack} lookup & 1406 & 29\% \\ %28.5
+    \hline
+    \texttt{oscpu} lookup & 580 & 12\% \\ %11.8
+    \hline
+    \\
+    \textit{using multiple of above attributes} & & \\
+    \hline
+    Sites using at least 2 attributes & 4338 & 88\% \\
+    \hline
+    Sites using at least 3 attributes & 4245 & 86\% \\
+    \hline
+    Sites using at least 4 attributes & 3968 & 81\% \\
+    \hline
+    Sites using at least 5 attributes & 3572 & 72\% \\
+    \hline
+    Sites using at least 6 attributes & 2906 & 59\% \\
+    \hline
+    Sites using at least 7 attributes & 1963 & 40\% \\
+    \hline
+    Sites using at least 8 attributes & 1138 & 23\% \\
+    \hline
+    Sites using 9 attributes & 473 & 10\% \\
+    \hline
+    \\
+    Calling functions defined by \textit{Fingerprintjs2} & 336 & 7\% \\ %6.8
+    \hline
+    \\
+    \textit{Canvas-related functions or attributes} & & \\
+    \hline
+    Using any canvas-related JavaScript & 1657 & 34\% \\ %33.6
+    \hline
+    \texttt{toDataURL or getImageData} & 884 & 18\% \\ %17.9
+    \hline
+    \texttt{toDataURL} & 768 & 16\% \\ %15.6
+    \hline
+    \texttt{getImageData} & 252 & 5\% \\ %5.1
+    \hline
+    \\
+\end{tabular}
+\end{center}
+
+Because of the basic attributes' ease of access, we may hope that these attributes are consistently used by different fingerprinters.
+Should that be the case, we can eliminate a large amount of sites from our dataset as non-fingerprinters;
+if we, for instance, find out that every fingerprinting script uses the \texttt{window.navigator.doNotTrack}
+property, 79\% of our crawled sites can be eliminated immediately.
+
+%% obviously, as it is the 6th most common, and this discusses 6-attr sites...
+% Indeed, as the table shows, 1216 sites use at least six of the described attributes. One of these six out of seven
+% attributes was the \texttt{doNotTrack} attribute for 1178 sites; about 97\% of the six-attribute sites.
+
+Of the 884 sites that use \texttt{toDataURL} or \texttt{getImageData} on a HTML5 Canvas object, which suggests
+a high likelihood of canvas fingerprinting, 536, or about 61\%, also use eight or more of the basic attributes.
+These 536 sites are good candidates for likely fingerprinters, and indeed, 147 of them overlap with the 336 sites that
+we have identified as users of \textit{Fingerprintjs2}.
+
+
+\begin{appendices}
+
+\chapter{OpenWPM Browser Params}
+\label{app:params}
+The following configuration for OpenWPM's \textit{default\_browser\_params} was used.
+
+\definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
+\setminted{fontsize=\footnotesize,bgcolor=mintedbg}
+\begin{minted}{json}
+{
+    "extension_enabled": true,
+    "cookie_instrument": false,
+    "js_instrument": true,
+    "cp_instrument": true,
+    "http_instrument": true,
+    "save_javascript": true,
+    "save_all_content": false,
+
+    "random_attributes": false,
+    "bot_mitigation": false,
+    "disable_flash": true,
+    "profile_tar": null,
+    "profile_archive_dir": null,
+    "headless": true,
+    "browser": "firefox",
+    "prefs": {},
+
+    "tp_cookies": "always",
+    "donottrack": false,
+    "disconnect": false,
+    "ghostery": false,
+    "https-everywhere": false,
+    "adblock-plus": false,
+    "ublock-origin": false,
+    "tracking-protection": false
+}
+\end{minted}
+
+
+\end{appendices}
+
+\clearpage
+
+\printbibliography
+
+\end{document}
