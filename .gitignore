@@ -1,7 +1,9 @@
 *.ldb
 *.sqlite
 *.sqlite3
+*.gz
 *.zip
+.~lock*
 
 # The below was created by https://www.gitignore.io/api/latex,python
 
