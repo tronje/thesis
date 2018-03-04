@@ -1,0 +1,788 @@
+% rubber: setlist arguments --shell-escape
+
+\documentclass[
+    fontsize=12pt,
+    headings=small,
+    parskip=half,
+    bibliography=totoc,
+    numbers=noenddot,
+    open=any
+    ]{scrreprt}
+
+\usepackage[utf8]{inputenc}
+% \usepackage{datetime2}
+\usepackage[
+    autostyle,
+    ]{csquotes}
+\usepackage{amsmath}
+\usepackage[titletoc,title]{appendix}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage{marvosym}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{acronym}
+% \usepackage{float}
+\usepackage[scaled=.92]{helvet}
+\usepackage{courier}
+\usepackage[table]{xcolor}
+\usepackage[
+    a4paper,
+    margin=2.54cm,
+    marginparwidth=2.0cm,
+    footskip=1.0cm
+    ]{geometry}
+
+\usepackage[
+    url=true,
+    style=numeric,
+    alldates=long,
+    dateabbrev=false
+]{biblatex}
+% \usepackage[
+%     style=alphabetic,
+%     backend=biber,
+%     %backref=true
+%     ]{biblatex}
+\addbibresource{literature.bib}
+
+\clubpenalty=10000
+
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\usepackage{float}
+\floatstyle{plaintop}
+\restylefloat{table}
+\usepackage{ifdraft}
+\pagestyle{plain}
+\deffootnote{1em}{1em}{
+  \thefootnotemark.\ }
+
+\titlehead{
+    \begin{center}
+        % \includegraphics[width=4cm]{images/uhh_logo_minimal.png}\\
+        \includegraphics[width=8cm]{images/UHH-Logo_2010_Farbe_RGB_hires_nomargin.png}\\
+        \medskip
+        Department of Computer Science
+    \end{center}
+}
+
+\newcommand{\dominik}[1]{\textcolor{orange}{\textbf{Notiz: #1}}}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO: #1}}}
+\newcommand{\cmark}{\textcolor{green}{\ding{51}}}
+% \newcommand{\xmark}{\textcolor{red}{\ding{55}}}
+\newcommand{\xmark}{\textcolor{red}{-}}
+\newcommand{\qmark}{\textcolor{orange}{\textbf{?}}}
+
+\title{
+    Implementation of browser fingerprinting detection \\
+    and integration into PrivacyScore
+}
+
+\author{Tronje Krabbe}
+
+\date{\today}
+
+\begin{document}
+\hypersetup{hidelinks}
+
+% \maketitle
+
+\newpage
+\thispagestyle{empty}
+% \addcontentsline{toc}{chapter}{Muster des Deckblatts}
+\begin{titlepage}% {{{
+\includegraphics[width=6.8cm]{images/up-uhh-logo-u-2010-u-farbe-u-rgb.pdf}
+\begin{center}\large
+	% Universität Hamburg \par
+	% Fachbereich Informatik
+    \vfill
+	\makeatletter
+	{\Large\textsf{\textbf{\@title}}\par}
+	\makeatother
+	\vfill
+    A thesis submitted for the degree of \\
+    \textit{Bachelor of Science} \\
+    in \\
+    \textit{Computer Science}
+	\vfill
+    by
+	\par\bigskip
+	\makeatletter
+	{\@author} \par
+	\makeatother
+	born 11. August 1994 in Hamburg \par
+	matriculation number 6435002
+	\vfill
+	\makeatletter
+	submitted {\@date}
+	\makeatother
+	\vfill
+	Supervisor: Dipl.-Inf. Tobias Müller \par
+	First reviewer: Prof. Dr.-Ing. Hannes Federrath \par
+	Second reviewer: Prof. Dr. Dominik Herrmann
+\end{center}
+\end{titlepage}% }}}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter Start                                                            %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introduction}
+\label{chap:introduction}
+
+When browsing the web, users can be tracked through the use of cookies, which store information on the user's computer
+that can also be accessed by a remote server.
+If users wish not to be trackable, they can modify or delete any cookie as they see fit.
+There are, however, other methods of uniquely identifying users and tracking them during their use of the internet,
+which are not as easily mitigated as cookies \cite{am_i_unique}. One of these methods is called ``browser fingerprinting'',
+and it will be the focus of this thesis.
+
+Browser fingerprinting, also known as device fingerprinting, and in the following often simply referred to as `fingerprinting',
+works by analyzing a web browser's configuration and settings; mostly installed fonts and HTML5 canvas behavior
+\cite{DBLP:conf/ccs/EnglehardtN16}, as well as
+language settings, time zone settings, installed add-ons, and more. Flash is also sometimes used, though
+its end-of-life lies in the foreseeable future, reportedly in the year 2020.
+\footnote{\url{https://arstechnica.com/information-technology/2017/07/with-html5-webgl-javascript-ascendant-adobe-to-cease-flash-dev-at-end-of-2020/}}
+Fingerprinting through Flash and the detection thereof will thus not be within the scope of this thesis.
+
+The above attributes are readily available to be collected through JavaScript functions. Simply recording
+all function calls made by the JavaScript front end of a website can reveal whether fingerprinting is likely to
+be taking place or not \cite{faiz2014browser, panopticlick}.
+
+Techniques used to identify and track users across different websites without
+their knowledge or their ability to easily intervene, violates their privacy; by creating a fingerprint
+of a user's browser, with sufficiently sophisticated techniques, one can uniquely identify one user
+among hundreds of thousands \cite{am_i_unique}, re-instate any cookies the user may have deleted,
+or simply track and analyze their use of any number of web services for a multitude of malicious reasons \cite{eckersley2010unique}.
+Methods exist to mitigate the effectiveness of browser fingerprinting, such as the one presented
+in \cite{laperdrix2015mitigating};
+these are, however, usually much more complicated and specialized for the average user of a web-browser.
+The author has therefore implemented a technique to recognize when a website is deploying browser fingerprinting,
+and along the way explored the techniques used to do so. The resulting software has been integrated into
+\url{https://privacyscore.org}, a web-service to test and rank websites according to the extent to which they
+respect their users' privacy; this creates a different kind of defense against the privacy violating
+methods that form the topic of this thesis: informing users about websites they use and their treatment of
+sensitive information.
+
+\section{Motivation}
+There is a fair amount of related work on the topic. However, since it exists in the fields of privacy and security,
+it always deals with some form of `adversary', meaning something or someone that can change and adapt to new
+research and methods. It is therefore important to keep up with any changes, which can happen very quickly
+in the context of software.
+In this case, someone can potentially come up with some new, not-yet-detectable fingerprinting mechanism,
+requiring new research to be done again, creating motivation from a technical perspective.
+
+Tracking a user does not simply mean recognizing whether a visitor to one's website is a new or an existing user.
+Identifying information can be passed on or sold to partners, advertisers, or even governments, in order to
+construct a rich browsing history of a user. Users are required by EU law to be informed of cookies being set
+by websites CITATION NEEDED, yet fingerprinting can and does happen quietly.
+The work of this thesis aims to create the possibility of users at least informing themselves about the practices
+of the websites they visit, giving a social motivational aspect.
+
+\section{Fundamentals}
+The following section will explain some fundamental knowledge that is
+referenced throughout this thesis.
+\dominik{ist diese section cool oder soll sie weg?}
+
+\subsection{Fingerprint}
+\label{fundamentals:fingerprint}
+Throughout the thesis, terms such as ``fingerprint'', ``browser fingerprint'', etc.
+will be used largely interchangeably.
+A fingerprint, in most contexts, is something that can uniquely identify something else.
+The obvious example is a human's fingerprint, which is unique to each finger of each human,
+with very few exceptions, if any.\footnote{\url{https://www.interpol.int/INTERPOL-expertise/Forensics/Fingerprints}}
+
+\subsection{Entropy}
+\label{fundamentals:entropy}
+Entropy is the most important aspect of a fingerprint.
+Peter Eckersley describes entropy as
+``a mathematical quantity which allows us to measure how close a fact comes to revealing somebody's identity uniquely''.\footnote{\url{https://www.eff.org/deeplinks/2010/01/primer-information-theory-and-privacy}}
+Entropy is often measured in bits, because it measures the different
+possible values something can take.
+To give an example, the outcome of a coin toss has one bit of entropy,
+as it can have two different values: heads or tails.
+A random, unknown human's identity contains about 33 bits of entropy,
+as two to the power of 33 is 8 billion, and there are some 7.6 billion humans
+alive at the time of writing.
+If a browser fingerprint can provide 33 bits of information, it can be used
+to uniquely identify any person.
+
+\subsection{JavaScript}
+\label{fundamentals:javascript}
+JavaScript\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript}} is,
+at the time of writing, the primary programming languages understood
+by modern web browsers. While HTML and CSS dictate the visual layout and style
+of a web page, JavaScript provides its functionality.
+JavaScript is important in the context of this thesis, because
+it can be used to construct a browser fingerprint. JavaScript can query
+a browser's or device's attributes, transform them, and transmit them
+to a third party.
+Within this thesis, the JavaScript code executed by websites
+when visited, will be saved and analyzed.
+This constitutes the primary source of data for the thesis.
+
+\subsection{Canvas}
+\label{fundamentals:canvas}
+The canvas is a HTML5 element, upon which a web page can draw,
+using one of several methods. For instance, WebGL allows rendering of complex
+3D graphics on a canvas.
+The canvas can also be manipulated by JavaScript. For this thesis,
+the canvas plays an important role. It enables the generation
+of images with high entropy values in regards to their fingerprinting value.
+We will show that many websites draw on a canvas, extract the resultant raw pixel
+values from the canvas, and use it to contribute to the generation of a fingerprint.
+This is possible for a number of reasons. For one, a JavaScript program
+can instruct the browser it is running in to draw emoji on a canvas.
+If the browser supports emoji, they will be drawn a certain way, usually dictated
+by the device the browser is running on. Apple's emoji look different from Google's
+emoji, for instance.\footnote{\url{https://emojipedia.org/apple/}}\footnote{\url{https://emojipedia.org/google/}}
+If emoji are not supported, fallback behavior often means that black squares will
+be drawn in their place.
+Thus, drawing simple emoji on a canvas can give up information about a device's vendor.
+A similar approach can be taken with fonts.
+Creating a WebGL rendering context and rendering images on it can reveal
+information about the GPU vendor of the host device.
+
+\todo{noch mehr?}
+
+\section{Leading Question and Goals}
+\dominik{fand ich nicht so gut, hab ich erstmal rausgenommen}
+% The overall goal of this thesis is to create a software that can reliably report whether a website carries out
+% fingerprinting, in order to expose these websites for using privacy-violating techniques, and integrating it into
+% \url{https://privacyscore.org}.
+% This goal is easily stated, but with it come several questions which will need to be answered before
+% it can be reached.
+
+% \subsection{What are the most commonly used fingerprinting methodologies?}
+% Methods to fingerprint change. Flash, for example, can be used to construct a fingerprint, but is expected
+% to be used less and less, since its end of life has been announced.
+% So, what are the most-used methods \textit{today}, and how much will these change over time? Which methods
+% can be expected to still be used in a year, and which will be deprecated soon?
+%
+% \subsection{What are the most commonly used fingerprinting libraries and how can they be found?}
+% Perhaps the most used library is a closed-source, proprietary product by some large conglomerate,
+% with no publicly available information. If its use can be reliably recognized, many websites could be found guilty
+% almost immediately. This, however, isn't a given, and it may take considerable effort to answer this question.
+%
+% \subsection{How can false positives be minimized?}
+% False positives, i.e. websites that are identified as fingerprinters, but don't actually employ any such technology,
+% are detrimental to the overall results of the software. How can they be minimized or, ideally, eliminated?
+%
+% \subsection{What does a good/fair metric look like?}
+% The impact of false positives can be diminished by employing a rating system or metric to rate a website's
+% ``fingerprinting score''. Instead of reporting boolean results (true or false), the software should
+% report a number or score that represents the likelihood of fingerprinting taking place, as determined by the software.
+% How is such a score calculated, and which attributes are used in this calculation?
+%
+% \subsection{Can all this be achieved with acceptable performance?}
+% This is as much a leading question as it is a goal: the software \textit{must} exhibit adequate performance.
+% Since a key component of the stated goal is to integrate the software into \url{https://privacyscore.org},
+% it must be able to analyze a website within seconds, to allow acceptable performance of PrivacyScore itself.
+% If the software were designed to simply be run once for some large number of websites, so that the results
+% could be displayed, it would be fine if it took some arbitrary amount of time. But in order to be useful
+% in the desired context, it is imperative that performance is at least something to be kept in mind.
+
+\section{Organization}
+The thesis' structure is shown in the following.
+In Chapter~\ref{chap:related_work}, we present related work, split into two main groups:
+related work on the topic of browser fingerprinting, and related work on
+browser fingerprinting detection.
+Chapter~\ref{chap:data_acquisition}, will showcase our data acquisition
+methods, and discuss some basic analyses.
+\todo{alle chapter erklären}
+
+% \section{Methods and Approach}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter End                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter Start                                                            %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Related Work}
+\label{chap:related_work}
+This chapter will give an overview of previous works. It is split into two sections.
+The first section presents existing work on the topic of fingerprinting. The second one will show existing work on
+the detection of fingerprinting.
+
+\section{Browser Fingerprinting}
+There are closed-source implementations of browser/device fingerprinting. These are unavailable to us.
+However, we can turn to several open-source projects which implement fingerprinting for deeper insights into this technology,
+and to learn how we may be able to identify these closed implementations.
+
+Essentially, fingerprinting works by combining data available to front-end JavaScript code into a string,
+usually by hashing some data structures. This string is the fingerprint.
+Different fingerprinting methods can be distinguished by the different attributes they use to construct their fingerprint.
+
+For instance, one of the attributes providing the most entropy, is acquired by so-called canvas fingerprinting, which works by drawing
+several symbols like geometric shapes, emoji, and so on, on an HTML5 canvas element \cite{laperdrix2016beauty}.
+Usually, letters, words, or whole sentences are also written onto the canvas, oftentimes with multiple different fonts.
+The resulting image can be serialized into a representation that can be included in the aforementioned fingerprint string.
+The fingerprint contains information about the host OS, and the hardware on which it runs.
+
+For a concrete example, \textit{Am I Unique?} writes the same pangram\footnote{A sentence containing every letter of the alphabet.}
+twice onto the canvas, using two different fonts, and each time followed by a special Unicode character, an emoji.
+Finally, a rectangle in a specific color is drawn \cite{laperdrix2016beauty}.
+
+So, while different fingerprinting scripts are all likely to use canvas fingerprinting, they can differ in the exact
+method they use to create the canvas-related aspect of the fingerprint.
+
+The methods described in this section can shed some light onto the different attributes used, and their computation,
+and how much entropy each can contribute to a fingerprint.
+
+We have compiled an overview of which attributes are used by which implementation in Table~\ref{app:attribute_table}.
+
+
+\subsection{Am I Unique?}
+\label{related_work:am_i_unique}
+\textit{Am I Unique?} \cite{laperdrix2016beauty} is a web service which creates
+a fingerprint with the press of a button.\footnote{\url{https://amiunique.org}}
+Its purpose is to educate users about fingerprinting
+\textit{Am I Unique?} borrows part of its JavaScript fingerprinting code from
+Fingerprintjs2, which is discussed below.\footnote{\url{https://github.com/DIVERSIFY-project/amiunique/blob/master/website/public/javascripts/webGL.js\#L2}}
+
+
+% FIXME there's a new version of Panopticlick that was released after the paper. Does it include canvas fingerprinting?
+\subsection{Panopticlick}
+\label{related_work:panopticlick}
+The EFF's Panopticlick project is similar to \textit{Am I Unique?}, in that it aims to learn and inform about
+fingerprinting. It also offers a way to test any tracking protection a user may have enabled by simulating
+tracking domains \cite{panopticlick}. The attributes used by Panopticlick to construct a fingerprint differ slightly from those used by
+\textit{Am I Unique?}, though overall, they are similar.
+
+Eckersley showed that the list of installed fonts and the list of installed plugins are the most identifying properties
+\cite{eckersley2010unique}. This finding, however, did not yet take canvas fingerprinting into consideration.
+
+
+\subsection{Fingerprintjs2}
+\label{related_work:fingerprintjs2}
+Fingerprintjs2 \cite{fingerprintjs2} is a popular JavaScript program that
+can be used to easily construct a fingerprint.\footnote{4891 stars and 712 forks on GitHub. Visited on February 4, 2018}
+It uses a larger variety of attributes when compared to the two previously mentioned services by default, though this is configurable.
+
+A crawl from January 27, 2018, of 4929 sites shows that 336 sites use Fingerprintjs2, for a percentage of about 6.82\%.
+This number was found by simply querying the database for function names that are consistent with
+those used in Fingerprintjs2, and therefore do not include sites which use an obfuscated Fingerprintjs2.
+Fingerprintjs2 has a few functions starting with the prefix \textit{getHasLied}, like \textit{getHasLiedOs}, the purpose
+of which is to report whether a browser tampered with certain information, for instance in the interest of mitigating
+fingerprinting.\footnote{\url{https://github.com/Valve/fingerprintjs2/wiki/Browser-tampering} Visited on February 8, 2018}
+Due to the peculiar name choice, and the fact that the same sites that call one \textit{getHasLied}
+function also call all others, we can be quite certain that they all include Fingerprintjs2.
+
+
+\section{Browser Fingerprinting Detection}
+At a basic level, in order to detect fingerprinting, all JavaScript calls to the relevant attributes,
+like User Agent, HTML5CanvasElement, and so on, need to be recorded. Then, a decision can be made about whether the number
+of calls is suspicious, or constitutes normal website behavior.
+
+However, since these attributes also have legitimate uses, this is not a trivial task.
+This section will present previous work on this topic.
+
+
+\subsection{FPDetective}
+\label{related_work:fpdetective}
+Acar et al. provide some useful metrics to differentiate between fingerprinting and legitimate use of
+browser attributes \cite{DBLP:conf/ccs/AcarJNDGPP13}. They have implemented a fingerprinting-detection
+framework called \textit{FPDetective}.
+\textit{FPDetective} focuses on font-based fingerprinting, and uses
+\textit{PhantomJS} to log JavaScript function calls and \textit{Chromium} to log Flash actions.
+Much like OpenWPM, their crawler logs accesses to certain browser and device properties, such as
+those contained within the \textit{window.navigator} object.
+Popular attributes like the HTML5 Canvas and WebGL were ignored in the study and by the framework's logging.
+
+Partly automated, their process consisted of an automated analysis in regards to font fingerprinting,
+and a manual analysis of JavaScript and decompiled Flash code.
+Their focus on fonts derives from the assumption that a website that
+enumerates fonts is a likely fingerprinter.
+
+\textit{FPDetective} classifies a script as a fingerprinter if ``it loads more than 30 system fonts, enumerates plugins
+or mimeTypes, detects screen and navigator properties, and sends the collected data back to a remote server''
+\cite{DBLP:conf/ccs/AcarJNDGPP13}.
+\dominik{Das hier hattest du markiert mit ``sounds good. you could use the same approach''. Also sowas dazu schreiben?} \\ \\
+This is a promising metric, and we could use the same approach. \\ \\
+\dominik{oder lieber} \\ \\
+This promising metric will be taken into account in our implementation. \\ \\
+\dominik{oder} \\ \\
+In Chapter~\ref{todo}, we show that this metric is \todo{accurate/useful or not?}.
+
+As Flash is nearing its end-of-life, this thesis opts not to analyze Flash programs
+delivered by websites, which means \textit{FPDetective}'s extensive work on Flash-based fingerprinting
+is, of little use for us.
+
+
+\subsection{OpenWPM - 1 million site study}
+\label{section:openwpm}
+Englehardt et al. have developed a framework called \textit{OpenWPM}, which can be used to analyze the way a website
+handles users' privacy. They have used this to analyze the tracking behavior of one million websites.
+\cite{DBLP:conf/ccs/EnglehardtN16,englehardt2016census}.
+
+Englehardt et al. differentiate between distinct forms of fingerprinting.
+They classify a script as a canvas-fingerprinter, if a there is a canvas larger than 16 by 16 pixels, and text is
+written to it in either at least two different colors, or with 10 distinct characters.
+A canvas-fingerprinter script should not call the \textit{save}, \textit{restore} or \textit{addEventListener}
+methods of the rendering context. Finally, the script has to call either \textit{toDataURL}
+or \textit{getImageData} for an area of at least 16 pixels in width and height.
+They have manually verified the accuracy of their heuristic, and found only four false positives
+out of 3493 scripts.
+We will show that this heuristic is \todo{good/not good?}.
+
+Englehardt et al. make a distinction between canvas fingerprinting and canvas font fingerprinting.
+They classify a script as a canvas font fingerprinter if it sets the \textit{font} property
+of a canvas at least 50 times, and also calls the \textit{measureText} method at least 50 times.
+They have manually verified that there were no false positives for this metric.
+
+Their findings show that only about 1.6\% of the analyzed sites
+employ canvas-based fingerprinting. However, they also show that among the top 1.000 sites,
+5.1\% of sites employ canvas-based fingerprinting.
+
+Their work also examines new, previously unknown methods of fingerprinting, such as canvas font fingerprinting, which
+works by rendering text in a large number of different fonts on a canvas element; WebRTC-based fingerprinting, which,
+as the name suggests, abuses the WebRTC framework; as well as AudioContext fingerprinting, and Battery API fingerprinting.
+
+OpenWPM uses Firefox, Selenium, and custom JavaScript injected into loaded sites to log calls to relevant browser attributes.
+It constitutes the technological basis of this thesis' work, as it allows easy crawling of websites, while recording
+most if not all relevant information.
+
+
+\subsection{Tor Browser}
+\label{related_work:tor_browser}
+\textit{The Design and Implementation of the Tor Browser [DRAFT]}
+states that ``[the authors] believe that the HTML5 Canvas is the single largest fingerprinting threat browsers face today'',
+As a canvas offers easy and high-entropy fingerprinting
+\cite{acar2014web,mowery2012pixel}.\footnote{\url{https://www.torproject.org/projects/torbrowser/design/} Visited on February 8, 2018}
+The Tor Browser can alert users to data collection from a HTML5 Canvas element.
+Data collection, in this context, means using a function like \textit{toDataURL} on the element.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter End                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter Start                                                            %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Data Acquisition and Analysis}
+\label{chap:data_acquisition}
+This chapter presents the data set used to conduct the experiments used in this thesis.
+We will describe how the data was acquired, as well as some basic properties of the set.
+
+\section{Acquiring Site Information}
+As described in section~\ref{section:openwpm}, we have used OpenWPM\footnote{\url{https://github.com/citp/OpenWPM}} to gather data about
+website behavior.
+The parameters used with OpenWPM to gather the data can be found in Appendix~\ref{app:params}.
+
+OpenWPM saves most data in SQLite3 databases.\footnote{\url{https://www.sqlite.org/index.html}}
+This includes the data interesting to us: JavaScript calls, function names, and script URLs.
+Python3's standard library makes it possible to interact with SQLite3
+databases.\footnote{\url{https://docs.python.org/3/library/sqlite3.html}}
+Thus, all of our analyses are implemented in Python3.
+Physical distributions of this thesis include the source code on a CD-ROM.
+\dominik{Sollte das mit der CD erwähnt werden?}
+We will show various methods used in our analyses in Chapter \todo{Kapitel schreiben und dann hier ref'en}
+
+Alexa regularly compiles a list of the top one million websites, ordered by the number of
+visitors\footnote{\url{https://www.alexa.com/topsites}}.
+We have analyzed the top 5000 websites, as described by a version of this list acquired from
+\url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip} on December 19, 2017.
+
+Multiple data sets based on this list were gathered. Due to timeouts or other
+errors, not all 5000 sites were actually crawled each time.
+The primary data set we used was crawled on January 27, 2018, and includes 4929 sites with distinct URLs. Some of these sites
+may be duplicates of each other. For instance, the URL \url{https://fbcdn.net/} for Facebook's content delivery
+network simply points to \url{https://facebook.com/}, both of which are included in the data set.
+
+We make the distinction between the primary data set and secondary data sets.
+We have run all analyses on the primary data set, and we will show
+that the noted behavior is consistent by repeating some analyses
+on the secondary sets.
+We do this because running all analyses on all sets is beyond the time
+constraints of this work.
+In the following, we will refer to the primary data set as simply ``the data set''.
+
+\section{Data Properties}
+In this section, we will give an overview of basic properties of the primary data set,
+with special regard to their relevance for fingerprinting.
+Table~\ref{table:dataprops} shows some of these properties.
+
+\renewcommand{\arraystretch}{1.2}
+\begin{table}
+\centering
+\caption{Analyzed Website's Behavior}
+\begin{tabular}{l r r}
+    \toprule
+% \arrayrulecolor{hlinegray}
+    & amount & percentage \\
+    All sites & 4929 & 100\% \\
+    \midrule
+    \textit{basic attribute look ups} & & \\
+    \textit{userAgent} & 4424 & 90\% \\ %89.8
+    \textit{language} or \textit{languages} & 3985 & 81\% \\ %80.8
+    \textit{colorDepth} & 3931 & 80\% \\ %79.8
+    \textit{localStorage} & 3772 & 77\% \\
+    \textit{platform} & 3275 & 66\% \\ %66.4
+    \textit{sessionStorage} & 2860 & 58\% \\
+    \textit{cookieEnabled} & 2823 & 57\% \\ %57.3
+    \textit{doNotTrack} & 1406 & 29\% \\ %28.5
+    \textit{oscpu} & 580 & 12\% \\ %11.8
+    \midrule
+    \textit{using multiple of above attributes} & & \\
+    at least 2 & 4338 & 88\% \\
+    at least 3 & 4245 & 86\% \\
+    at least 4 & 3968 & 81\% \\
+    at least 5 & 3572 & 72\% \\
+    at least 6 & 2906 & 59\% \\
+    at least 7 & 1963 & 40\% \\
+    at least 8 & 1138 & 23\% \\
+    9 attributes & 473 & 10\% \\
+    \midrule
+    \textit{Canvas-related functions or attributes} & & \\
+    Using any canvas-related JavaScript & 1657 & 34\% \\ %33.6
+    \textit{toDataURL} or \textit{getImageData} & 884 & 18\% \\ %17.9
+    \textit{toDataURL} & 768 & 16\% \\ %15.6
+    \textit{getImageData} & 252 & 5\% \\ %5.1
+    \midrule
+    Calling functions defined by \textit{Fingerprintjs2} & 336 & 7\% \\ %6.8
+    \bottomrule
+\end{tabular}
+\label{table:dataprops}
+\end{table}
+
+The first block of Table~\ref{table:dataprops}, titled \textit{basic attribute look ups},
+shows how many sites looked up certain browser- or device attributes.
+We label these as `basic', because a JavaScript program can access them with a single function
+call. In this section of the table, we can see that, for example, 90\% of sites in the set access the
+\textit{userAgent} property.
+How many websites access which attribute is interesting to us because of the basic attributes' ease of access.
+As their values are easy to acquire, one might expect that these attributes are consistently used by different fingerprinters.
+
+The next section in the table shows how many sites use more than one of the basic attributes.
+Note that the rows are not mutually exclusive. This means that, e.g. the 4245 sites using ``at least'' three
+attributes also contain all sites that use more than three attributes.
+This information is useful, because fingerprints are and need to be constructed from
+multiple data points. If they weren't, they would not be unique enough.
+\todo{Welche Quelle hier citen?}
+
+The final block of Table~\ref{table:dataprops} is focused on the HTML5 Canvas element.
+More specifically, we show how many sites use any kind of Canvas-related JavaScript,
+as well as how many use the specific data extraction methods.
+A website qualifies as using ``any Canvas-related JavaScript'' when it makes use
+of any function calls that are part of the Canvas API\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API}}.
+The two methods that can be used for data extraction are
+\textit{toDataURL}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL}}
+and
+\textit{getImageData}\footnote{\url{{https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData}}}.
+This part of the table is interesting to us, as the Canvas element is one of the
+most useful elements for the construction of a fingerprint, as described
+in Section~\ref{fundamentals:canvas}.
+
+Of the 884 sites that use \texttt{toDataURL} or \texttt{getImageData} on a HTML5 Canvas object, which suggests
+a high likelihood of canvas fingerprinting, 536, or about 61\%, also use eight or more of the basic attributes.
+These 536 sites (not shown in the table) are good candidates for likely fingerprinters.
+And indeed, 147 of them are contained in the 336 sites that we have identified as users of \textit{Fingerprintjs2}.
+\textit{Fingerprintjs2}, as discussed in Section~\ref{}, can be configured to include any number of attributes
+in its generated fingerprint. From the above, we can also conclude that 189 users of \textit{Fingerprintjs2}
+do not use either of the data extraction methods of the Canvas element. This is curious because
+of the Canvas' high entropy potential.
+In Section \todo{}, we will show that this is \todo{not?} an anomaly in the data we have collected.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter End                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter Start                                                            %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Design and Implementation}
+Is there enough to be said about design and implementation to warrant an entire chapter?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter End                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter Start                                                            %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Evaluation}
+Evaluation has been performed, and it was great.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter End                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter Start                                                            %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion and Outlook}
+This thesis was terrific and there's lots of cool stuff to look out for.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Chapter End                                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% }}
+
+
+
+% \begingroup
+% \renewcommand{\cleardoublepage}{}
+% \renewcommand{\clearpage}{}
+% \chapter{Methods and Approach} % {{
+% \endgroup
+%
+% \section{False Positives}
+% Filtering false positives will prove to be the most challenging problem in this context.
+% Requesting fonts via JavaScript might be a dead giveaway
+% that fingerprinting code is, in fact, fingerprinting code. However, it might cause legitimate code, such
+% as a multimedia player, to be mistaken for fingerprinting code, as well, even though it has a legitimate
+% reason and perhaps a necessity to know a system's installed fonts.
+% Meta-data can and possibly must be used to filter these; a list can be compiled of popular JavaScript libraries with legitimate,
+% yet fingerprinting-like behavior, and then extended through analysis of collected data (see Technology below).
+%
+% All results must be evaluated regarding both precision and recall. Suppose a fingerprinting-recognition software
+% analyzes 100 websites. It reports that 50 of them employ fingerprinting, and that the other 50 do not.
+% In reality, however, only 40 of the 50 ``positives'' actually do employ fingerprinting, but a total
+% of 80 of all the analyzed sites employ it.
+% The precision of this software would then be $40/50 = 4/5$, as 40 out of 50 of its reported positives were correct.
+% Its recall would be $40/80 = 1/2$, as it only reported 40 positives out of 80 actual positives.
+% One might say that precision describes the usefulness of the results, while recall describes their completeness.
+%
+% \section{Metric}
+% If a website includes a well-known browser fingerprinting library, or makes many calls to JavaScript functions that return
+% data which is useful in building a fingerprint, one can conclude: this website is very likely generating,
+% saving, and possibly distributing a browser's fingerprint; simply put: it performs browser fingerprinting.
+% However, some modern websites may exhibit some similar traits or behavior that can be used to construct a fingerprint
+% for reasons other than identification. Analyzing installed fonts has an obvious, legitimate use: correctly displaying
+% text. Thus, it is important to work out a metric or rating system of some sort, which can
+% (somewhat) reliably represent the likelihood that fingerprinting is, in fact, taking place.
+% Acar et al. assert that the more fonts are being requested, the more likely a website is to
+% be practicing fingerprinting \cite{DBLP:conf/ccs/AcarJNDGPP13}.
+% This is based on findings of Eckersley, of the Panopticlick project \cite{eckersley2010unique}.
+% Acar et al. further state that they classify a JavaScript file as a fingerprinter ``when it loads
+% more than 30 fonts, enumerates plugins or mimeTypes, detects screen and navigator properties, and sends the
+% collected data back to a remote server'' \cite{DBLP:conf/ccs/AcarJNDGPP13}.
+% Englehardt and Narayanan present a metric to detect Canvas-based fingerprinting by specifying certain
+% attributes such a Canvas, and the code using it, should have \cite{DBLP:conf/ccs/EnglehardtN16}.
+% The above considerations form a good basis upon which to build a reliable metric, which will have to be
+% evaluated further during the implementation process.
+%
+% \section{Scope}
+% Finding or creating a single website which collects a fingerprint, and basing development of fingerprinting
+% recognition on it, will not yield reliable or representative results. It is imperative to test
+% the created recognition software against a multitude of fingerprinting libraries and users of these.
+% It will be prudent to test the software against, say, the top 500 websites as ranked by
+% Alexa\footnote{\url{http://www.alexa.com/topsites}}, as there is a high likelihood these sites employ
+% a multitude of techniques to track their users, but there is no way to be sure if some of these sites wouldn't
+% generate false positives.
+% The safest way would be to create websites which employ an array of fingerprinting libraries both preexisting and
+% implemented by the author, and then comparing the employed JavaScript calls with those from popular websites.
+% The best approach seems to be a combination of the above; create a set of fake websites, some of which employ fingerprinting,
+% others mimicking it. Then the results from analyzing them will be compared to the results from analyzing top Alexa sites.
+%
+% % }}
+
+\begin{appendices}
+
+\chapter{Fingerprinting Attributes}
+
+Table~\ref{app:attribute_table} shows which of the presented fingerprinting services/libraries use which attributes of the
+browser \cite{am_i_unique,panopticlick,fingerprintjs2}.
+
+\dominik{Wirklich keine hlines in der table? damit man besser erkennen kann, welches Häkchen wozu gehört?}
+
+\renewcommand{\arraystretch}{1.2}
+\begin{table}
+\centering
+\caption{Different Browser Attributes used by Fingerprinting Projects}
+\begin{tabular}{ l c c c }
+    \toprule
+    & Am I Unique? & Panopticlick & Fingerprintjs2 \\
+    User Agent & \cmark & \cmark & \cmark \\
+    Accept Header & \cmark & \cmark & \xmark \\
+    Content Encoding & \cmark & \xmark & \xmark \\
+    Content Language & \cmark & \xmark & \xmark \\
+    List of plugins & \cmark & \cmark & \cmark \\
+    Cookies enabled? & \cmark & \cmark & \xmark \\
+    Local storage available? & \cmark & \xmark & \cmark \\
+    Session storage available? & \cmark & \xmark & \cmark \\
+    Timezone & \cmark & \cmark & \cmark \\
+    Screen resolution & \cmark & \cmark & \cmark \\
+    Screen color depth & \cmark & \cmark & \cmark \\
+    List of fonts & \cmark & \cmark & \cmark \\
+    List of HTTP headers & \cmark & \xmark & \xmark \\
+    Platform & \cmark & \cmark & \cmark \\
+    Do Not Track Header present? & \cmark & \cmark & \cmark \\
+    Canvas & \cmark & \cmark & \cmark \\
+    WebGL & \cmark & \cmark & \cmark \\
+    WebGL Vendor & \cmark & \xmark & \cmark \\
+    WebGL Renderer & \cmark & \cmark & \cmark \\
+    Use of an ad blocker & \cmark & \xmark & \cmark \\
+    JavaScript allowed? & \xmark & \cmark & \xmark \\
+    System Language & \xmark & \cmark & \cmark \\
+    Touchscreen support & \xmark & \cmark & \cmark \\
+    IndexedDB available? & \xmark & \xmark & \cmark \\
+    Open DB? & \xmark & \xmark & \cmark \\
+    CPU class & \xmark & \xmark & \cmark \\
+    Available processors & \xmark & \xmark & \cmark \\
+    Device memory & \xmark & \xmark & \cmark \\
+    \bottomrule
+\end{tabular}
+\label{app:attribute_table}
+\end{table}
+
+
+\chapter{OpenWPM Browser Params}
+The following configuration for OpenWPM's \textit{default\_browser\_params} was used.
+
+\definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
+\setminted{fontsize=\footnotesize,bgcolor=mintedbg}
+
+\begin{figure}
+\label{app:params}
+\begin{minted}{json}
+{
+    "extension_enabled": true,
+    "cookie_instrument": false,
+    "js_instrument": true,
+    "cp_instrument": true,
+    "http_instrument": true,
+    "save_javascript": true,
+    "save_all_content": false,
+
+    "random_attributes": false,
+    "bot_mitigation": false,
+    "disable_flash": true,
+    "profile_tar": null,
+    "profile_archive_dir": null,
+    "headless": true,
+    "browser": "firefox",
+    "prefs": {},
+
+    "tp_cookies": "always",
+    "donottrack": false,
+    "disconnect": false,
+    "ghostery": false,
+    "https-everywhere": false,
+    "adblock-plus": false,
+    "ublock-origin": false,
+    "tracking-protection": false
+}
+\end{minted}
+\caption{The Browser Parameters used by OpenWPM in our Crawls}
+\end{figure}
+
+\end{appendices}
+
+\clearpage
+
+\printbibliography
+
+\end{document}
