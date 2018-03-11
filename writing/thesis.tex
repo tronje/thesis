@@ -49,6 +49,8 @@
 %     ]{biblatex}
 \addbibresource{literature.bib}
 
+\urlstyle{rm}
+
 \clubpenalty=10000
 
 \widowpenalty=10000
@@ -58,8 +60,7 @@
 \restylefloat{table}
 \usepackage{ifdraft}
 \pagestyle{plain}
-\deffootnote{1em}{1em}{
-  \thefootnotemark.\ }
+\deffootnote{1em}{1em}{\thefootnotemark.\ }
 
 \titlehead{
     \begin{center}
@@ -147,8 +148,8 @@ Browser fingerprinting, also known as device fingerprinting, and in the followin
 works by analyzing a web browser's configuration and settings; mostly installed fonts and HTML5 canvas behavior
 \cite{DBLP:conf/ccs/EnglehardtN16}, as well as
 language settings, time zone settings, installed add-ons, and more. Flash is also sometimes used, though
-its end-of-life lies in the foreseeable future, reportedly in the year 2020.
-\footnote{\url{https://arstechnica.com/information-technology/2017/07/with-html5-webgl-javascript-ascendant-adobe-to-cease-flash-dev-at-end-of-2020/}}
+its end-of-life lies in the foreseeable future, reportedly in the year
+2020.\footnote{\url{https://arstechnica.com/information-technology/2017/07/with-html5-webgl-javascript-ascendant-adobe-to-cease-flash-dev-at-end-of-2020/}}
 Fingerprinting through Flash and the detection thereof will thus not be within the scope of this thesis.
 
 The above attributes are readily available to be collected through JavaScript functions. Simply recording
@@ -309,7 +310,7 @@ methods, and discuss some basic analyses.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Related Work}
 \label{chap:related_work}
-This chapter will give an overview of previous works. It is split into two sections.
+This Chapter will give an overview of previous works. It is split into two sections.
 The first section presents existing work on the topic of fingerprinting. The second one will show existing work on
 the detection of fingerprinting.
 
@@ -378,6 +379,21 @@ Due to the peculiar name choice, and the fact that the same sites that call one 
 function also call all others, we can be quite certain that they all include Fingerprintjs2.
 
 
+\subsection{Fingerprint Central}
+\label{related_work:fp_central}
+Fingerprint Central, or FP Central, is a website which ``aims at studying the diversity
+of browser fingerprints and providing developers with data to help them design good defenses''.\footnote{\url{https://fpcentral.tbb.torproject.org/}}
+Much like Panopticlick or \textit{Am I Unique?}, one can have the site generate a device fingerprint,
+and view the exact components of the fingerprint, as well as statistics about other users' fingerprints.
+Of note is the fact that FP Central does not use canvas fingerprinting at this time.
+However, the service is still in its beta phase, so this may change in the future.
+Another interesting aspect of FP Central is the math fingerprinting.
+High-precision mathematical functions can have operating system specific behavior, and thus provide
+entropy.\footnote{\url{https://trac.torproject.org/projects/tor/ticket/13018}}
+FP Central also performs audio context fingerprinting, which is also not present in any of the previously presented
+fingerprinters.
+
+
 \section{Browser Fingerprinting Detection}
 At a basic level, in order to detect fingerprinting, all JavaScript calls to the relevant attributes,
 like User Agent, HTML5CanvasElement, and so on, need to be recorded. Then, a decision can be made about whether the number
@@ -418,7 +434,7 @@ delivered by websites, which means \textit{FPDetective}'s extensive work on Flas
 is, of little use for us.
 
 
-\subsection{OpenWPM - 1 million site study}
+\subsection{OpenWPM}
 \label{section:openwpm}
 Englehardt et al. have developed a framework called \textit{OpenWPM}, which can be used to analyze the way a website
 handles users' privacy. They have used this to analyze the tracking behavior of one million websites.
@@ -471,7 +487,7 @@ Data collection, in this context, means using a function like \textit{toDataURL}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Data Acquisition and Analysis}
 \label{chap:data_acquisition}
-This chapter presents the data set used to conduct the experiments used in this thesis.
+This Chapter presents the data set used to conduct the experiments used in this thesis.
 We will describe how the data was acquired, as well as some basic properties of the set.
 
 \section{Acquiring Site Information}
@@ -508,6 +524,7 @@ constraints of this work.
 In the following, we will refer to the primary data set as simply ``the data set''.
 
 \section{Data Properties}
+\label{section:data_properties}
 In this section, we will give an overview of basic properties of the primary data set,
 with special regard to their relevance for fingerprinting.
 Table~\ref{table:dataprops} shows some of these properties.
@@ -583,7 +600,7 @@ This part of the table is interesting to us, as the Canvas element is one of the
 most useful elements for the construction of a fingerprint, as described
 in Section~\ref{fundamentals:canvas}.
 
-Of the 884 sites that use \texttt{toDataURL} or \texttt{getImageData} on a HTML5 Canvas object, which suggests
+Of the 884 sites that use \textit{toDataURL} or \textit{getImageData} on a HTML5 Canvas object, which suggests
 a high likelihood of canvas fingerprinting, 536, or about 61\%, also use eight or more of the basic attributes.
 These 536 sites (not shown in the table) are good candidates for likely fingerprinters.
 And indeed, 147 of them are contained in the 336 sites that we have identified as users of \textit{Fingerprintjs2}.
@@ -592,6 +609,56 @@ in its generated fingerprint. From the above, we can also conclude that 189 user
 do not use either of the data extraction methods of the Canvas element. This is curious because
 of the Canvas' high entropy potential.
 In Section \todo{}, we will show that this is \todo{not?} an anomaly in the data we have collected.
+
+
+\section{\textit{toDataURL} Usage}
+In Section~\ref{section:data_properties} we alleged that a use of \textit{toDataURL}
+suggests a high likelihood of canvas fingerprinting.
+To show the plausibility of this claim, we have analysed the JavaScript served by
+75 sites that use \textit{toDataURL} by hand.
+These 75 sites were chosen from the list of sites which call \textit{toDataURL},
+but have not been identified as users of FingerprintJS2.
+
+\begin{figure}
+\begin{minted}{sql}
+SELECT DISTINCT script_url
+FROM javascript
+WHERE symbol = 'HTMLCanvasElement.toDataURL';
+\end{minted}
+\caption{SQL query to select all JavaScript programs using \textit{toDataURL}.}
+\label{code:todataurl_users_query}
+\end{figure}
+
+OpenWPM gives us a SQLite database, which includes a \textit{javascript} table.
+This table includes a column called \textit{script\_url}, which contains
+the URL to a JavaScript file, and a column called \textit{symbol}, containing
+the name of the symbol accessed by a JavaScript program.
+Using the query depicted in Figure~\ref{code:todataurl_users_query}, we can find all scripts
+that access the symbol \textit{HTMLCanvasElement.toDataURL}.
+
+The analysis of these scripts was done by looking for tell-tale signs of fingerprinting
+in the often minified JavaScript code.
+These signs are enumeration of fonts, writing pangrams to canvases, writing nonsense
+to canvases, never displaying canvases, enumeration of plugins, and suspicious function
+names like \textit{getFingerprint}.
+
+Following the analysis, we claim with confidence that 48 out of the 75 sites are fingerprinters.
+Table~\ref{table:todataurl_users} shows more details of this analysis.
+
+\begin{table}
+\centering
+\caption{\textit{toDataURL} User's Behavior}
+\begin{tabular}{l  r r}
+    \toprule
+    & amount & percentage \\
+    Analysed sites & 75 & 100\% \\
+    \midrule
+    Using a third-party fingerprinting script & & \\
+    \todo{} & & \\
+    \bottomrule
+\end{tabular}
+\label{table:todataurl_users}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Chapter End                                                              %%
