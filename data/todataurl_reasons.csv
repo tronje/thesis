@@ -6,13 +6,13 @@ http://sina.com.cn,atanx.alicdn.com script
 http://jd.com,uses function called `getCanvasFp`
 http://list.tmall.com,atanx.alicdn.com script
 http://linkedin.com,uses function called `canvasFingerprint`
-http://rakuten.co.jp,suspicious akam script user
+http://rakuten.co.jp,akam script user
 http://youth.cn,atanx.alicdn.com user
 http://cnet.com,akam script user
 http://avito.ru,too obfuscated
 http://fbcdn.net,same as facebook
 http://bestbuy.com,akam script user
-http://washingtonpost.com,creates canvas and draws on it but never inserts it into DOM
+http://washingtonpost.com,doubleverify script user
 http://gearbest.com,akam script user
 http://godaddy.com,uses lazyimage which seems legit
 http://china.com.cn,atanx2.alicdn script
@@ -20,46 +20,46 @@ http://target.com,too obfuscated which is kinda suspiscious
 http://onlinevideoconverter.com,doubleverify script user
 http://newstrend.news,something with emoji which looks fine
 http://yelp.com,`getCanvasFp`
-http://bankofamerica.com,not sure but looks fingerprint-y
+http://bankofamerica.com,font enumeration and canvas fingerprinting and also webgl stuff
 http://dkn.tv,emoji stuff again
 http://bukalapak.com,not sure but looks fine
-http://wellsfargo.com,pretty sure it fingerprints
+http://wellsfargo.com,font enumeration and audio stuff and webgl stuff
 http://ikea.com,akam script
 http://exoclick.com,emoji check
 http://speedtest.net,doubleverify script user
-http://bilibili.com,fingerprints with log-reporter.js
+http://bilibili.com,fingerprints with log-reporter.js -> canvas fingerprinting
 http://liputan6.com,draws nonsense on canvas -> fingerprints
 http://foxnews.com,doubleverify script user and akam script user
 http://asos.com,akam script user
 http://sberbank.ru,super obfuscated but no canvas in DOM!
 http://subject.tmall.com,inconclusive
 http://ups.com,`getCanvasPrint`
-http://zillow.com,fingerprinting because it creates canvases and writes on them but never inserts them into DOM
+http://zillow.com,font enumeration -> fingerprints with perimeterx script
 http://usps.com,foresee script user
-http://macys.com,fingerprints with popular script
+http://macys.com,akam script user
 http://orange.fr,`getCanvasFingerprint`
 http://gamefaqs.com,doubleverify script user
 http://icloud.com,blurs images -> no fingerprinting
 http://airbnb.com,fingerprints with lots of fonts on canvas
 http://newegg.com,inconclusive
-http://capitalone.com,looks like fingerprinting
+http://capitalone.com,font fingerprinter
 http://kohls.com,akam script
 http://indoxxi.net,`canvasFingerprint`
 http://dictionary.com,doubleverify script user
-http://fiverr.com,fingerprints
+http://fiverr.com,fingerprints with popular pangram
 http://nike.com,too obfuscated
 http://bloomberg.com,fingerprinting because uses popular pangram
 http://seznam.cz,suspicious canvas uses and no canvas in DOM
 http://independent.co.uk,doubleverify script user
-http://cambridge.org,not sure but no canvas in DOM
+http://cambridge.org,looks fine
 http://groupon.com,fingerprints with attribute and font enumeration
-http://spiegel.de,fingerprints
+http://spiegel.de,font fingerprinting
 http://investopedia.com,doubleverify script user
 http://tfetimes.com,emoji-support detection
 http://citi.com,too obfuscated but also suspicious
 http://pikabu.ru,`getCanvasFingerprint`
 http://upwork.com,`doGetBrowserFingerPrint`
-http://suning.com,fingerprints
+http://suning.com,looks like canvas fingerprinting
 http://naukri.com,akam script user
 http://costco.com,akam script user
 http://wsj.com,suspicious function name (getCanvasFingerprint)
@@ -69,7 +69,7 @@ http://att.com,foresee script user
 http://gap.com,akam script user
 http://jawabkom.com,fingerprints with popular pangram
 http://allrecipes.com,suspicious function name (getCanvasFingerprint)
-http://vidio.com,fingerprints
+http://vidio.com,fingerprints with static6 script
 http://bldaily.com,emoji-support detection
 http://time.com,emoji-support detection
 http://inquirer.net,emoji-support detection
