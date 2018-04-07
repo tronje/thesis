@@ -4,7 +4,7 @@ NAME = thesis
 DEPS = literature.bib
 
 # build the pdf and display it
-default: $(DEPS) $(NAME).pdf show
+default: $(NAME).pdf show
 
 # build our pdf
 %.pdf: %.tex $(DEPS)
