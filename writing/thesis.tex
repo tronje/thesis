@@ -275,6 +275,8 @@ code. For an example of JavaScript obfuscation, consider the code samples in
 Figure~\ref{code:javascript_hello_world} and Figure~\ref{code:javascript_obfuscated}.
 They are functionally equivalent. The code in Figure~\ref{code:javascript_obfuscated}
 has been obfuscated by JavaScript Obfuscator\footnote{\url{https://javascriptobfuscator.com}}.
+A more extreme example for obfuscation of JavaScript code is provided by JSFuck\footnote{\url{jsfuck.com}},
+the output of which cotains only six distinct characters, while still being technically valid JavaScript.
 
 \begin{figure}
 \centering
@@ -828,7 +830,7 @@ limit detection, as many scripts already do through obfuscation.
 \begin{verbatim}
 Cwm fjordbank glyphs vext quiz, 
 \end{verbatim}
-\caption{Pangram used by \textit{Am I Unique?}, among others \todo{EMOJI HIER DANKE LATEX}}
+\caption{Pangram used by \textit{Am I Unique?}, among others \todo{screenshot}}
 \label{code:pangram}
 \end{figure}
 
@@ -973,6 +975,92 @@ WHERE symbol LIKE '%getcontext%'
 \label{code:webgl_query}
 \end{figure}
 
+\begin{table}
+\centering
+\caption{WebGL User's Behavior}
+\begin{tabular}{l r r}
+    \toprule
+    & amount & percentage \\
+    \midrule
+    \textbf{Analyzed sites} & 75 & 100\% \\
+    \midrule
+    \textbf{Fingerprinting sites} & 34 & 45\% \\
+    \midrule
+    \textbf{Inconclusive} & 21 & 28\% \\
+    too obfuscated & 10 & 13\% \\
+    otherwise inconclusive & 11 & 15\% \\
+    \midrule
+    \textbf{Legitimate users} & 20 & 27\% \\
+    \bottomrule
+\end{tabular}
+\label{table:webgl_users}
+\end{table}
+
+The results of our analysis, as displayed in Table~\ref{table:webgl_users}, again show that this
+API is used by many fingerprinters in our dataset.
+With WebGL, there is a higher number of sites which we have labeled ``inconclusive''.
+This is because \todo{warum ist das so? war halt irgendwie schwerer zu erkennen...}
+
+As OpenWPM in its current version does not instrument calls to the WebGL API, we have to
+work around this by using the SQL query shown in Figure~\ref{code:webgl_query}.
+There are no other symbols that OpenWPM instruments that are related to WebGL.
+
+This also limits our methods of automatically labeling a script a fingerprinter.
+The only information we can gather from the database OpenWPM creates
+is whether a script uses WebGL or not.
+
+\todo{noch mehr zu WebGL? Was?}
+
+
+\section{WebRTC Fingerprinting}
+
+\begin{figure}
+\begin{minted}{sql}
+SELECT DISTINCT site_url
+FROM site_visits
+  JOIN javascript
+    ON site_visits.visit_id = javascript.visit_id
+WHERE symbol LIKE 'RTCPeerConnection%';
+\end{minted}
+\caption{Query to select all users of the WebRTC API}
+\label{code:webrtc_query}
+\end{figure}
+
+\begin{table}
+\centering
+\caption{WebRTC User's Behavior}
+\begin{tabular}{l r r}
+    \toprule
+    & amount & percentage \\
+    \midrule
+    \textbf{Analyzed sites} & 75 & 100\% \\
+    \midrule
+    \textbf{Fingerprinting sites} & 15 & 20\% \\
+    \midrule
+    \textbf{Inconclusive} & 51 & 68\% \\
+    using adsafeprotected script & 37 & 49\% \\
+    too obfuscated & 14 & 19\% \\
+    otherwise inconclusive & 1 & 1\% \\
+    \midrule
+    \textbf{Legitimate users} & 9 & 12\% \\
+    \bottomrule
+\end{tabular}
+\label{table:webrtc_users}
+\end{table}
+
+
+\section{Multiple Fingerprinting Techniques}
+\label{sec:correlation}
+We assume that a site which was identified to fingerprint using one method is likely
+to also be using another method.
+This is a sane assumption, as more techniques give more entropy, and more entropy makes a more
+unique and therefore better fingerprint.
+
+To substantiate this claim, we have analysed 75 sites which we have previously identified as fingerprinters.
+These sites were picked randomly from our set of already identified fingerprinters.
+
+The results are shown in Table~\todo{Tabelle}.
+
 
 \section{Discussion}
 In the following, we will discuss the acquired data and the analyses we have performed.
@@ -980,8 +1068,10 @@ In the following, we will discuss the acquired data and the analyses we have per
 \subsection{Fingerprinters}
 The data shows us that simply by using a Canvas object a certain way, or by using the Audio API,
 a site is already a likely fingerprinter. We can assert this, because our analyses have shown
-67\% of analysed users of \textit{toDataURL}, 72\% of analysed Audio API users and \todo{\%}
-users of WebGL to be fingerprinters.
+67\% of analysed users of \textit{toDataURL}, 72\% of analysed Audio API users and 45\%
+of analysed users of WebGL to be fingerprinters.
+Furthermore, 20\% of WebRTC users fingerprint, in addition to any fingerprinters we were unable
+to identify, like the 49\% that use a suspicious but inconclusively labeled script.
 Thus, just by using one or more of the listed APIs, we ascertain that a website is more likely
 to be a fingerprinter than not.
 
@@ -992,7 +1082,6 @@ by fingerprinters.
 Oftentimes, fingerprinter scripts contain very suspicious function names, such as \textit{getCanvasFingerprint}.
 While the absence of these details does not help in classifying a site,
 their presence can be used to instantly classify a site or script as a fingerprinter.
-
 
 
 \subsection{Limitations}
@@ -1020,7 +1109,20 @@ of who is at fault.
 %% Chapter Start                                                            %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Design and Implementation}
-Is there enough to be said about design and implementation to warrant an entire chapter?
+In Chapter~\ref{chap:data_acquisition}, we have shown many users of certain JavaScript APIs to be fingerprinters.
+We can build upon this knowledge to score websites in regards to their likelihood to be fingerprinting.
+
+Our approach to implement automated fingerprinting detection is described in the following.
+The software will analyse a website's behavior based on a data gathering by OpenWPM.
+We will extract all information relevant to fingerprinting from the database,
+and present this to the user of the detection software.
+We will highlight any giveaways of fingerprinting, such as included magic strings
+or suspicious function names.
+
+In Section~\ref{sec:correlation}, we have shown that a fingerprinting site is more
+likely to use a variety fingerprinting methods than it is to use a small number.
+Thus, the more usage of suspicious APIs we detect, the higher the likelihood
+that we have found a fingerprinter.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Chapter End                                                              %%
