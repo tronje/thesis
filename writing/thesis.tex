@@ -742,6 +742,7 @@ In Section \todo{}, we will show that this is \todo{not?} an anomaly in the data
 
 
 \section{\textit{toDataURL} Usage}
+\label{sec:todataurl}
 In Section~\ref{section:data_properties} we suggested that a use of \textit{toDataURL}
 suggests a high likelihood of canvas fingerprinting.
 To show the plausibility of this claim, we have performed a manual analysis of the JavaScript served by
@@ -827,10 +828,9 @@ limit detection, as many scripts already do through obfuscation.
 
 % Cwm fjordbank glyphs vext quiz, 😃
 \begin{figure}
-\begin{verbatim}
-Cwm fjordbank glyphs vext quiz, 
-\end{verbatim}
-\caption{Pangram used by \textit{Am I Unique?}, among others \todo{screenshot}}
+\centering
+\includegraphics[scale=0.4]{images/fjordbank.png}
+\caption{Pangram with emoji as used by \textit{Am I Unique?}, among others}
 \label{code:pangram}
 \end{figure}
 
@@ -945,7 +945,7 @@ for each of the 13 sites in our set which use it.\footnote{\url{https://cdn.atla
 Along with the Web Audio API, it uses the Canvas API, enumerates 26 distinct fonts and accesses other
 properties of the \textit{window} and \textit{window.navigator} objects which are often used in fingerprinting.
 We have also found the ``mmmmmmmmmmlli'' magic string in the JavaScript code, which we will further discuss
-in \todo{mmmmmmmmmmlli section}.
+in Section~\ref{sec:font_fingerprinting}.
 Thus, we also classify it as a fingerprinter.
 
 We refer to the final script as ``the b2c script'', although it may in fact be more than one distinct
@@ -959,6 +959,47 @@ as well as multiple ``basic properties''.
 
 We conclude that the Audio API is a prime indicator of browser fingerprinting, as the instances of
 fingerprinting use far outweigh its use of actual audio playback.
+
+
+\section{Font Fingerprinting}
+\label{sec:font_fingerprinting}
+Font fingerprinting is easy to recognize when analysing minified JavaScript,
+as it works by enumerating various fonts to see if they are available on the fingerprinted
+system. This can be done by writing text to a Canvas in various fonts and measuring
+the rendered writing using the \textit{measureText} method \cite{englehardt2016census}.
+
+Because of its usual use of the Canvas element, it is closely related to Canvas fingerprinting,
+and it can be difficult to classify in some cases. In Section~\ref{sec:todataurl}
+we have shown an example of a ``magic string'' pangram, which also contains some emoji.
+It is used by \textit{Am I Unique?} and others to fingerprint via the Canvas element.
+To that end, it is written onto a canvas in two different fonts, and some other elements are drawn
+as well, and the pixel data is then extracted. This method obviously uses font information
+to improve the fingerprint.
+However, other methods are more font-centric and use many more fonts, as well as the \textit{measureText}
+method.
+Yet other methods do not use a Canvas element at all.
+
+Font fingerprinting in the form where many fonts are enumerated is easy to spot in minified JavaScript,
+as there is usually an array containing many font names present.
+
+Within the context of Font fingerprinting, we have identified the ``magic string''
+\textit{mmmmmmmmmmlli}. To the best of our knowledge, we are the first to notice this string
+in relation to fingerprinting. It is used by at least ten sites in our dataset, and always occurs
+with exactly ten times the letter ``m'', two times the letter ``l'', and one letter ``i''.
+
+We are unsure about the real number of sites in our dataset that use this magic string, because
+it is sometimes used within a \textit{span} element instead of a canvas.
+JavaScript calls on this type of element are not instrumented by OpenWPM.
+Thus, there may be more sites that use this magic string to fingerprint
+in our dataset.
+We have included an example of this type of fingerprinting in Figure~\ref{app:mmmmmmmmmmlli}
+in the Appendix.
+
+We speculate that the \textit{mmmmmmmmmmlli} string has certain subtle differences in width
+when rendered by different browsers or font-rendering libraries on different systems, with
+different fonts or font-families. We leave the determintation of the exakt reason to use
+this particular string for future work.
+
 
 \section{WebGL Fingerprinting}
 
@@ -1007,7 +1048,7 @@ There are no other symbols that OpenWPM instruments that are related to WebGL.
 
 This also limits our methods of automatically labeling a script a fingerprinter.
 The only information we can gather from the database OpenWPM creates
-is whether a script uses WebGL or not.
+is whether a script creates a WenbGL context or not.
 
 \todo{noch mehr zu WebGL? Was?}
 
@@ -1051,15 +1092,44 @@ WHERE symbol LIKE 'RTCPeerConnection%';
 
 \section{Multiple Fingerprinting Techniques}
 \label{sec:correlation}
+
+\begin{table}
+\centering
+\caption{Numbers of Fingerprinting APIs Used}
+\begin{tabular}{l r r}
+    \toprule
+    APIs used & amount & percentage \\
+    \midrule
+    \textbf{Analyzed sites} & 60 & 100\% \\
+    \midrule
+    1 & 15 & 25\% \\
+    2 & 20 & 33\% \\
+    3 & 13 & 22\% \\
+    4 & 9 & 15\% \\
+    5 & 2 & 3\% \\
+    \bottomrule
+\end{tabular}
+\label{table:webrtc_users}
+\end{table}
+
 We assume that a site which was identified to fingerprint using one method is likely
 to also be using another method.
 This is a sane assumption, as more techniques give more entropy, and more entropy makes a more
 unique and therefore better fingerprint.
 
-To substantiate this claim, we have analysed 75 sites which we have previously identified as fingerprinters.
+To substantiate our claim, we have analysed 60 sites which we have previously identified as fingerprinters.
 These sites were picked randomly from our set of already identified fingerprinters.
 
-The results are shown in Table~\todo{Tabelle}.
+We exclude the basic attributes, such as the \textit{userAgent}, when we count the methods used by a site.
+The counted methods are thus Audio-, Canvas-, Font-, WebGL- and WebRTC-Fingerprinting.
+All analysed sites also used basic attributes to enhance their fingerprint.
+
+The results are shown in Table~\todo{Tabelle}, and support our assumption. A quarter of the fingerprinters
+use one API to fingerprint, and the remainder use more than one.
+Between one and three APIs used are the most common cases, four and especially five different APIs are much less common.
+
+We conclude that it is not especially rare for a site to use only one fingerprintable API in addition
+to the basic browser attributes, but the majority of fingerprinters use more than one such API.
 
 
 \section{Discussion}
@@ -1120,9 +1190,19 @@ We will highlight any giveaways of fingerprinting, such as included magic string
 or suspicious function names.
 
 In Section~\ref{sec:correlation}, we have shown that a fingerprinting site is more
-likely to use a variety fingerprinting methods than it is to use a small number.
+likely to use a variety of fingerprinting methods than it is to use just one.
 Thus, the more usage of suspicious APIs we detect, the higher the likelihood
 that we have found a fingerprinter.
+
+A site could be labeled more suspicious if many fingerprintable APIs are used within the same script,
+and less suspicious if their use is spread across different scripts.
+However, a site looking to avoid our detection mechanism could simply
+spread their fingerprinting algorithm across multiple JavaScript files.
+In addition to this, many modern websites use \textit{webpack}\footnote{\url{https://webpack.js.org/}}
+or a similar technology to combine multiple JavaScript files into one when serving
+them to their users. This could lead a non-fingerprinting site to be labeled
+more likely to fingerprint than it actually is.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Chapter End                                                              %%
@@ -1240,6 +1320,88 @@ The following configuration for OpenWPM's \textit{default\_browser\_params} was 
 \end{minted}
 \caption{The Browser Parameters used by OpenWPM in our Crawls}
 \end{figure}
+
+
+\chapter{\textit{mmmmmmmmmmlli} Magic String Use}
+\begin{figure}
+\begin{minted}[linenos]{javascript}
+tb = function() {
+    var a = ["monospace", "sans-serif", "serif"],
+        b = document.getElementsByTagName("body")[0],
+        c = document.createElement("div");
+    c.setAttribute(
+        "style",
+        "visibility: hidden;position: absolute; top: 0px; left: -999px;"
+    );
+    b.appendChild(c);
+    b = document.createElement("span");
+    b.style.fontSize = "72px";
+    b.innerHTML = "mmmmmmmmmmlli";
+    var d = {},
+        e = {},
+        f;
+    for (f in a) {
+        b.style.fontFamily = a[f];
+        c.appendChild(b);
+        d[a[f]] = b.offsetWidth;
+        e[a[f]] = b.offsetHeight;
+        c.removeChild(b);
+    }
+    this.detect = function(b) {
+        var f = document.createElement("div");
+        f.setAttribute(
+            "style",
+            "visibility: hidden;position: absolute; top: 0px; left: -999px;"
+        );
+        for (var g = [], k = [], h = 0; h < b.length; h++) {
+            var l = [];
+            k.push(!1);
+            for (var n in a) {
+                var p = document.createElement("div"),
+                    q = document.createElement("span");
+                q.style.fontSize = "72px";
+                q.innerHTML = "mmmmmmmmmmlli";
+                q.style.fontFamily = b[h] + "," + a[n];
+                p.appendChild(q);
+                f.appendChild(p);
+                l.push(q)
+            }
+            g.push(l)
+        }
+        c.appendChild(f);
+        for (h = 0; h < b.length; h++)
+            for (n in l = g[h], a) {
+                q = l[n];
+                p = q.offsetWidth != d[a[n]] || q.offsetHeight != e[a[n]];
+                k[h] = k[h] || p;
+            }
+        c.removeChild(f);
+        return k
+    }
+},
+\end{minted}
+\caption{Example of \textit{mmmmmmmmmmlli} magic string use by \url{bankofamerica.com}}
+\label{app:mmmmmmmmmmlli}
+\end{figure}
+
+The code in Figure~\ref{app:mmmmmmmmmmlli} was taken from a script served by \url{bankofamerica.com}.
+It is not a complete script, but rather just one function definition in a larger script.
+We have ``beautified'' the code using DuckDuckGo's JavaScript beautifier, written by Akansh Gulati\footnote{\url{https://github.com/akanshgulati}}.
+We have also modified the beautified code further to eliminate long lines, thus allowing it to be displayed
+on this page.
+We have not made any functional modifications.
+
+The code demonstrates the use of the \textit{mmmmmmmmmmlli} magic string in a \textit{span} HTML element.
+It is used for font fingerprinting without the use of a Canvas element.
+The original URL of the full JavaScript was \url{https://secure.bankofamerica.com/login/sign-in/cc.go}.
+
+In the code, multiple \textit{span} elements are created and inserted into the DOM,
+each containing the magic string with a font size of 72 pixels, and with their font-family
+set to different combinations of fonts and the font types ``monospace'', ``sans-serif'' and ``serif''.
+These elements are invisible from the user.
+Their \textit{offsetWidth} and \textit{offsetHeight} properties are read, saved, and presumably
+used for fingerprinting.
+The list of fonts used contains 300 entries, but is not shown for brevity's sake.
 
 
 \end{appendices}
