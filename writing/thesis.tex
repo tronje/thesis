@@ -176,13 +176,13 @@
 
 Many websites use cookies or other means to track users across the web. This is often
 done for marketing or advertising purposes. Oftentimes, cookies are insufficient to reliably
-track a user, as they can be deleted by the user. To track such a user, a fingerprint
+track a user, as they can be deleted by the user. Alternatively, to track a user, a fingerprint
 of their device and web browser can be constructed, which can identify the user uniquely
 within a large set of users.
 
-This thesis aims to explore modern fingerprinting techniques, and implement
+This thesis aims to explore modern fingerprinting techniques, and to implement
 automated fingerprinting detection. This creates transparency for users
-that are concerned about their privacy, and that do not wish to have their online
+who are concerned about their privacy, and who do not wish to have their online
 activity tracked and recorded.
 
 We have explored related work on fingerprinting and fingerprinting detection,
@@ -228,7 +228,7 @@ in \cite{laperdrix2015mitigating};
 these are, however, usually quite complicated and thus not suitable for ordinary users.
 The author has therefore implemented a technique to recognize when a website is deploying browser fingerprinting,
 and along the way explored the common techniques used to construct a fingerprint. The resulting software has been integrated into
-PrivacyScore, a web-service to test and rank websites according to the extent to which they
+PrivacyScore\footnote{\url{https://privacyscore.org}}, a web-service to test and rank websites according to the extent to which they
 respect their users' privacy \cite{privacyscore}.
 Informing users about websites they use and their treament of sensitive information
 can be seen as a different kind of defense against the violation of privacy that is fingerprinting.
@@ -281,7 +281,7 @@ at the time of writing, the primary programming language understood
 by modern web browsers. While HTML and CSS dictate the visual layout and style
 of a web page, JavaScript provides its functionality.
 JavaScript is important in the context of this thesis, because
-it can be used to construct a browser fingerprint. JavaScript can query
+it can be used to construct a browser fingerprint. It can query
 the attributes of a browser or device, transform them, and transmit them
 to a third party.
 Within this thesis, the JavaScript code executed by websites
@@ -297,7 +297,7 @@ code. For an example of JavaScript obfuscation, consider the code samples in
 Figure~\ref{code:javascript_hello_world} and Figure~\ref{code:javascript_obfuscated}.
 They are functionally equivalent. The code in Figure~\ref{code:javascript_obfuscated}
 has been obfuscated by JavaScript Obfuscator\footnote{\url{https://javascriptobfuscator.com}}.
-A more extreme example for obfuscation of JavaScript code is provided by JSFuck\footnote{\url{jsfuck.com}},
+A more extreme example for obfuscation of JavaScript code is provided by JSFuck\footnote{\url{https://jsfuck.com}},
 the output of which cotains only six distinct characters, while still being technically valid JavaScript.
 
 \begin{figure}
@@ -347,7 +347,7 @@ information about the GPU and associated driver software of the host device.
 \section{Goal and Leading Questions}
 \label{sec:goal}
 The overall goal of this thesis is to create a software that can reliably report whether a website carries out
-fingerprinting, and to integrate it into \url{https://privacyscore.org}. To achieve this goal,
+fingerprinting, and to integrate it into PrivacyScore. To achieve this goal,
 we must inspect the state of browser fingerprinting across the web, and gain new insights into the topic.
 To this end, we will attempt to answer the following leading questions.
 
@@ -546,7 +546,7 @@ sent to them via email on a weekly basis. Upon visiting each link, a fingerprint
 generated and saved.
 
 Their intermediate results show that 96\% of their 33,302 collected fingerprints are
-unique.\footnote{\url{https://browser-fingerprint.cs.fau.de/statistics/?lang=en} Visited on May 5, 2018}
+unique.\footnote{\url{https://browser-fingerprint.cs.fau.de/statistics/} Visited on May 5, 2018}
 These fingerprints were generated for 2197 registered participants during 43.2 weeks so far.
 One very interesting takeaway from their intermediate results is that 69\%
 of all \textit{userAgent} strings are unique amongst their participants.
@@ -554,8 +554,8 @@ This makes the \textit{userAgent} a prime attribute to include in a fingerprint,
 and can be used by us in our implementation; for a website where the fingerprinting detection
 is otherwise inconclusive, the use of the \textit{userAgent} can be the deciding factor.
 
-Their fingerprint seems to include browser and operating system, whether each of cookies, do-not-track,
-JavaScript, Flash, Java and Silverlight are enabled, number of plugins, number of MIME types,
+Their fingerprint seems to include browser and operating system, whether cookies, do-not-track,
+JavaScript, Flash, Java and/or Silverlight are enabled, number of plugins, number of MIME types,
 and the number of installed fonts. This is based on the information on their statistics page.
 A detailed description of their fingerprinting technique is absent on their website.
 
@@ -976,7 +976,7 @@ Given the high amount of ``inconclusive'' entries, we have visited each Audio us
 in a Chromium web browser, which produces the version string ``Version 65.0.3325.181 (Developer Build) (64-bit)''.
 This browser was otherwise unmodified, meaning there were no plugins, such as ad-blockers, installed.
 Note that this version of the Chromium web browser supports the Audio API, which we have manually verified
-by creating an instance of \textit{AudioContext} in the developer tools' console.
+by creating an instance of \textit{AudioContext} in the console of the developer tools.
 
 We have visited each site and waited for it to finish loading completely, and waited a further 10 seconds,
 exactly like OpenWPM in our automated data collection.
@@ -1460,6 +1460,7 @@ This thesis was terrific and there's lots of cool stuff to look out for.
 
 \chapter{OpenWPM Browser Params}
 The following configuration for OpenWPM's \textit{default\_browser\_params} was used.
+\todo{add a bit more description, why not?}
 
 \definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
 \setminted{fontsize=\footnotesize,bgcolor=mintedbg}
@@ -1563,6 +1564,7 @@ The code of Figure~\ref{app:canvas_fp} displays fingerprinting code
 using the Canvas API. It was taken from Fingerprintjs2 (cf. Sec.~\ref{related_work:fingerprintjs2}).
 We have made minimal modifications by removing comments for the sake of brevity, and changing
 long lines to make the code fit onto the page.
+The code is otherwise shown as-is, with not modifications that alter its functionality.
 
 
 \chapter{\textit{mmmmmmmmmmlli} Magic String Use}
@@ -1642,9 +1644,13 @@ In the code, multiple \textit{span} elements are created and inserted into the D
 each containing the magic string with a font size of 72 pixels, and with their font-family
 set to different combinations of fonts and the font types ``monospace'', ``sans-serif'' and ``serif''.
 These elements are invisible from the user.
-Their \textit{offsetWidth} and \textit{offsetHeight} properties are read, saved, and presumably
+Their \textit{offsetWidth} and \textit{offsetHeight} properties are read, saved, and
 used for fingerprinting.
-The list of fonts used contains 300 entries, but is not shown for brevity's sake.
+These properties can reveal whether a font is available on the system, because
+if the font is not available, they will be the same as for the default, fallback
+font. So, if they differ for a certain font, that font is installed. If they do not,
+the font is not installed.
+The list of fonts used contains 300 entries, but is not shown for the sake of brevity.
 
 
 \end{appendices}
