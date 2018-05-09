@@ -20,11 +20,13 @@
 \usepackage{pifont}
 \usepackage{marvosym}
 \usepackage{minted}
+\usepackage{mdframed}
 \usepackage{graphicx}
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{setspace}
 \usepackage{acronym}
+\usepackage{gensymb}
 % \usepackage{float}
 \usepackage[scaled=.92]{helvet}
 \usepackage{courier}
@@ -74,9 +76,13 @@
 
 \setlength{\belowcaptionskip}{10pt plus 1pt minus 1pt}
 \setlength{\textfloatsep}{20pt plus 1pt minus 1pt}
-\setlength{\floatsep}{20pt plus 1pt minus 1pt}
+\setlength{\floatsep}{30pt plus 1pt minus 1pt}
 
-\newcommand{\dominik}[1]{\textcolor{orange}{\textbf{Notiz: #1}}}
+% minted stuff
+\definecolor{mintedborder}{rgb}{0.8,0.8,0.8}
+\BeforeBeginEnvironment{minted}{\begin{mdframed}[linecolor=mintedborder]}
+\AfterEndEnvironment{minted}{\end{mdframed}}
+
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO: #1}}}
 \newcommand{\cmark}{\textcolor{green}{\ding{51}}}
 % \newcommand{\xmark}{\textcolor{red}{\ding{55}}}
@@ -160,7 +166,7 @@
 	Studiengang Informatik
 	\vfill
 	\makeatletter
-	eingereicht am {\@date}
+	eingereicht am 11. Mai 2018
 	\makeatother
 	\vfill
 	Betreuer: Dipl.-Inf. Tobias Müller \par
@@ -186,7 +192,7 @@ who are concerned about their privacy, and who do not wish to have their online
 activity tracked and recorded.
 
 We have explored related work on fingerprinting and fingerprinting detection,
-analysed many sites that use fingerprintable attributes or APIs by hand,
+analysed many sites that use fingerprintable attributes or APIs manually,
 and implemented an automated fingerprinting detection method into PrivacyScore,
 a service that can scan and analyse a website in regards to its privacy and security.
 
@@ -207,7 +213,7 @@ which are not as easily mitigated as cookies \cite{am_i_unique}. One of these me
 and it will be the focus of this thesis.
 
 Browser fingerprinting, also known as device fingerprinting, and in the following often simply referred to as ``fingerprinting'',
-works by analyzing a web browser's configuration and settings; mostly installed fonts and HTML5 canvas behavior
+works by analyzing a web browser's configuration and settings; mostly installed fonts and HTML5 canvas behaviour
 \cite{DBLP:conf/ccs/EnglehardtN16}, as well as
 language settings, time zone settings, installed add-ons, and more. Flash is also sometimes used, though
 its end-of-life lies in the foreseeable future, reportedly in the year
@@ -226,10 +232,10 @@ or simply track and analyse their use of any number of web services for a multit
 Methods exist to mitigate the effectiveness of browser fingerprinting, such as the one presented
 in \cite{laperdrix2015mitigating};
 these are, however, usually quite complicated and thus not suitable for ordinary users.
-The author has therefore implemented a technique to recognize when a website is deploying browser fingerprinting,
+We have therefore implemented a technique to recognize when a website is deploying browser fingerprinting,
 and along the way explored the common techniques used to construct a fingerprint. The resulting software has been integrated into
 PrivacyScore\footnote{\url{https://privacyscore.org}}, a web-service to test and rank websites according to the extent to which they
-respect their users' privacy \cite{privacyscore}.
+respect user privacy \cite{privacyscore}.
 Informing users about websites they use and their treament of sensitive information
 can be seen as a different kind of defense against the violation of privacy that is fingerprinting.
 
@@ -296,8 +302,8 @@ a reasonable time frame. We have encountered many instances of obfuscated JavaSc
 code. For an example of JavaScript obfuscation, consider the code samples in
 Figure~\ref{code:javascript_hello_world} and Figure~\ref{code:javascript_obfuscated}.
 They are functionally equivalent. The code in Figure~\ref{code:javascript_obfuscated}
-has been obfuscated by JavaScript Obfuscator\footnote{\url{https://javascriptobfuscator.com}}.
-A more extreme example for obfuscation of JavaScript code is provided by JSFuck\footnote{\url{https://jsfuck.com}},
+has been obfuscated by JavaScript Obfuscator \cite{jsobfuscator}.
+A more extreme example for obfuscation of JavaScript code is provided by JSFuck \cite{jsfuck},
 the output of which cotains only six distinct characters, while still being technically valid JavaScript.
 
 \begin{figure}
@@ -336,7 +342,7 @@ can instruct the browser it is running in to draw emoji on a canvas.
 If the browser supports emoji, they will be drawn in a certain way, usually dictated
 by the device the browser is running on. Apple's emoji look different from Google's
 emoji, for instance.\footnote{\url{https://emojipedia.org/apple/}}\footnote{\url{https://emojipedia.org/google/}}
-If emoji are not supported, fallback behavior often means that black squares will
+If emoji are not supported, fallback behaviour often means that black squares will
 be drawn in their place.
 Thus, drawing simple emoji on a canvas can give up information about a device's vendor.
 A similar approach can be taken with fonts.
@@ -426,6 +432,8 @@ the detection of fingerprinting.
 
 \section{Browser Fingerprinting}
 There are various closed-source implementations of browser/device fingerprinting. These are unavailable to us.
+To give an example, we will describe a script or family of scripts that are highly obfuscated, but also likely
+fingerprinters, in Section~\ref{sec:audio_fingerprinting}.
 However, we can turn to several open-source projects which implement fingerprinting for deeper insights into this technology,
 and to learn how we may be able to identify the closed implementations.
 
@@ -440,7 +448,7 @@ The script in Appendix~\ref{app:canvas_fp} shows an example of canvas fingerprin
 
 For a concrete example, \textit{Am I Unique?} writes the same pangram\footnote{A sentence containing every letter of the alphabet.}
 twice onto the canvas, using two different fonts, and each time followed by a special Unicode character, an emoji.
-Finally, a rectangle in a specific color is drawn \cite{laperdrix2016beauty}.
+Finally, a rectangle in a specific colour is drawn \cite{laperdrix2016beauty}.
 
 So, while different fingerprinting scripts are all likely to use canvas fingerprinting, they can differ in the exact
 method they use to create the canvas-related aspect of the fingerprint.
@@ -498,7 +506,7 @@ In Chapter~\ref{chap:data_acquisition}, we will show that about 7\% of sites we 
     Session storage available? & \cmark & \xmark & \cmark \\[3px]
     Timezone & \cmark & \cmark & \cmark \\[3px]
     Screen resolution & \cmark & \cmark & \cmark \\[3px]
-    Screen color depth & \cmark & \cmark & \cmark \\[3px]
+    Screen colour depth & \cmark & \cmark & \cmark \\[3px]
     List of fonts & \cmark & \cmark & \cmark \\[3px]
     List of HTTP headers & \cmark & \xmark & \xmark \\[3px]
     Platform & \cmark & \cmark & \cmark \\[3px]
@@ -526,21 +534,22 @@ In Chapter~\ref{chap:data_acquisition}, we will show that about 7\% of sites we 
 \subsection{Fingerprint Central}
 \label{related_work:fp_central}
 Fingerprint Central, or FP Central, is a website which ``aims at studying the diversity
-of browser fingerprints and providing developers with data to help them design good defenses''.\footnote{\url{https://fpcentral.tbb.torproject.org/}}
+of browser fingerprints and providing developers with data to help them design good defenses'' \cite{fpcentral}.
 Much like Panopticlick or \textit{Am I Unique?}, one can have the site generate a device fingerprint,
-and view the exact components of the fingerprint, as well as statistics about other users' fingerprints.
+and view the exact components of the fingerprint, as well as statistics about the fingerprints of other users.
 Of note is the fact that FP Central does not use canvas fingerprinting at this time.
 However, the service is still in its beta phase, so this may change in the future.
 Another interesting aspect of FP Central is the math fingerprinting.
-High-precision mathematical functions can have operating system specific behavior, and thus provide
+High-precision mathematical functions can have operating system specific behaviour, and thus provide
 entropy.\footnote{\url{https://trac.torproject.org/projects/tor/ticket/13018}}
 FP Central also performs audio context fingerprinting, which is also not present in any of the previously presented
 fingerprinters.
 
 \subsection{Study by Friedrich-Alexander-University}
+\label{related_work:fau}
 The Chair for Computer Science 1 of Friedrich-Alexander-University Erlangen-Nürnberg (FAU)
 is, at the time of writing, conducting a study about
-browser fingerprinting.\footnote{\url{https://browser-fingerprint.cs.fau.de/}}
+browser fingerprinting \cite{fau_fingerprinting}.
 Their study has users sign up on their website, and then has users click links
 sent to them via email on a weekly basis. Upon visiting each link, a fingerprint of that user is
 generated and saved.
@@ -562,7 +571,7 @@ A detailed description of their fingerprinting technique is absent on their webs
 \section{Browser Fingerprinting Detection}
 At a basic level, in order to detect fingerprinting, all JavaScript calls to the relevant attributes,
 like User Agent, HTML5CanvasElement, and so on, need to be recorded. Then, a decision can be made about whether the number
-of calls is suspicious, or constitutes normal website behavior.
+of calls is suspicious, or constitutes normal website behaviour.
 
 However, since these attributes also have legitimate uses, this is not a trivial task.
 This section will present previous work on this topic.
@@ -583,11 +592,9 @@ Partly automated, their process consisted of an automated analysis in regards to
 and a manual analysis of JavaScript and decompiled Flash code.
 Their focus on fonts derives from the assumption that a website that
 enumerates fonts is a likely fingerprinter.
-
 \textit{FPDetective} classifies a script as a fingerprinter if ``it loads more than 30 system fonts, enumerates plugins
 or mimeTypes, detects screen and navigator properties, and sends the collected data back to a remote server''
 \cite{DBLP:conf/ccs/AcarJNDGPP13}.
-In Chapter~\ref{todo}, we show that this metric is \todo{accurate/useful or not?}.
 
 As Flash is nearing its end-of-life, this thesis opts not to analyse Flash programs
 delivered by websites, which means \textit{FPDetective}'s extensive work on Flash-based fingerprinting
@@ -597,22 +604,25 @@ is of little use for us.
 \subsection{OpenWPM}
 \label{section:openwpm}
 Englehardt et al. have developed a framework called \textit{OpenWPM}, which can be used to analyse the way a website
-handles users' privacy. They have used this to analyse the tracking behavior of one million websites
+handles user privacy. They have used this to analyse the tracking behaviour of one million websites
 \cite{DBLP:conf/ccs/EnglehardtN16,englehardt2016census}.
 
 Englehardt et al. differentiate between distinct forms of fingerprinting.
 They classify a script as a canvas-fingerprinter, if there is a canvas larger than 16 by 16 pixels, and text is
 written to it in either at least two different colors, or with 10 distinct characters.
-A canvas-fingerprinter script should not call the \textit{save}, \textit{restore} or \textit{addEventListener}
+A canvas-fingerprinter script should \textit{not} call the \textit{save}, \textit{restore} or \textit{addEventListener}
 methods of the rendering context.
-\dominik{Deine Notiz: `should or should not? and: why? how did they justify that?'}\\
-\dominik{\textit{should not}, und sie haben es nicht justified... vermutlich aber weil die genannten Methoden legitimen Nutzen wahrscheinlicher machen? ich als fingerprinter kann denen also ausweichen, indem ich einfach diese Methoden benutze...}
+They have not further justified why the calling of these methods is a criterium to label a script non-fingerprinting.
+We assume that these methods suggest legitimate use of the API. However, when analysing a script automatically,
+we cannot take the absence of these methods into consideration. A script looking to evade our detection
+could simply call these methods without using them for any practical reason.
 
 Finally, the script has to call either \textit{toDataURL}
 or \textit{getImageData} for an area of at least 16 pixels in width and height.
 They have manually verified the accuracy of their heuristic, and found only four false positives
 out of 3493 scripts.
-We will show that this heuristic is \todo{good/not good?}.
+We will show that calling \textit{toDataURL} on a canvas element is indeed a good indicator of fingerprinting
+in Section~\ref{sec:todataurl}.
 
 Englehardt et al. make a distinction between canvas fingerprinting and canvas font fingerprinting.
 They classify a script as a canvas font fingerprinter if it sets the \textit{font} property
@@ -651,9 +661,9 @@ Data collection, in this context, means using a function like \textit{toDataURL}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Data Acquisition and Analysis}
 \label{chap:data_acquisition}
-This chapter presents the data set used to conduct the experiments used in this thesis.
+This chapter presents the dataset used to conduct the experiments for this thesis.
 We will describe how the data was acquired, and present an analysis of the fingerprinting
-behavior contained within.
+behaviour contained within.
 
 Our goal is to base a scoring algorithm on our findings, which we will integrate into PrivacyScore.
 A good scoring algorithm will distinguish at least three cases. That a site is very likely fingerprinting,
@@ -668,13 +678,13 @@ We will present our algorithm in Chapter~\ref{chap:implementation}.
 \section{Acquiring Site Information}
 \label{sec:acquiring_information}
 As described in Section~\ref{section:openwpm}, we have used OpenWPM\footnote{\url{https://github.com/citp/OpenWPM}} to gather data about
-website behavior.
+website behaviour.
 The parameters used with OpenWPM to gather the data can be found in Appendix~\ref{app:params}.
 
 OpenWPM saves most data in SQLite3 databases.\footnote{\url{https://www.sqlite.org/index.html}}
 This includes the data interesting to us: JavaScript calls, function names, and script URLs.
 We analysed the SQLite3 databases using Python3 scripts.
-Physical distributions of this thesis include the source code on a CD-ROM.
+Physical distributions of this thesis include the source code on a USB drive.
 We will show some of the SQL queries we used to extract interesting data throughout Chapter~\ref{chap:data_acquisition}.
 
 Alexa regularly compiles a list of the top one million websites, ordered by the number of
@@ -682,30 +692,30 @@ visitors.\footnote{\url{https://www.alexa.com/topsites}}
 We have analysed the top 5000 websites, as described by a version of this list acquired from
 \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip} on December 19, 2017.
 
-Multiple data sets based on this list were gathered. Due to timeouts or other
+Multiple datasets based on this list were gathered. Due to timeouts or other
 errors, not all 5000 sites were actually crawled each time.
-The primary data set we used was crawled on January 27, 2018, and includes 4929 sites with distinct URLs. Some of these sites
+The primary dataset we used was crawled on January 27, 2018, and includes 4929 sites with distinct URLs. Some of these sites
 may be duplicates of each other. For instance, the URL \url{https://fbcdn.net/} for Facebook's content delivery
-network simply points to \url{https://facebook.com/}, both of which are included in the data set.
+network simply points to \url{https://facebook.com/}, both of which are included in the dataset.
 
-We make the distinction between the primary data set and secondary data sets.
-We have run all analyses on the primary data set, and we will show
-that the noted behavior is consistent by repeating some analyses
+We make the distinction between the primary dataset and secondary datasets.
+We have run all analyses on the primary dataset, and we will show
+that the noted behaviour is consistent by repeating some analyses
 on the secondary sets.
 We do this because running all analyses on all sets is beyond the time
 constraints of this work.
-In the following, we will refer to the primary data set as simply ``the data set''.
+In the following, we will refer to the primary dataset as simply ``the dataset''.
 
 \section{Data Properties}
 \label{section:data_properties}
-In this section, we will give an overview of basic properties of the primary data set,
+In this section, we will give an overview of basic properties of the primary dataset,
 with special regard to their relevance for fingerprinting.
 Table~\ref{table:dataprops} shows some of these properties.
 
 \renewcommand{\arraystretch}{1.2}
 \begin{table}
 \centering
-\caption{Behavior of Analysed Websites}
+\caption{Behaviour of Analysed Websites}
 \begin{tabular}{l r r}
     \toprule
 % \arrayrulecolor{hlinegray}
@@ -834,7 +844,7 @@ Table~\ref{table:todataurl_users} shows more details of this analysis.
 
 \begin{table}
 \centering
-\caption{Behavior of \textit{toDataURL} Users}
+\caption{Behaviour of \textit{toDataURL} Users}
 \begin{tabular}{l r r}
     \toprule
     & amount & percentage \\
@@ -859,7 +869,7 @@ Table~\ref{table:todataurl_users} shows more details of this analysis.
 
 The first block of Table~\ref{table:todataurl_users} shows the sites
 we have deemed to be fingerprinters. Of these, 26 use a popular third-party script.
-This is interesting, because the behavior of widely used scripts can be used to tune our scoring system.
+This is interesting, because the behaviour of widely used scripts can be used to tune our scoring system.
 However, when assigning a score, looking for suspicious scripts based on
 name or URL alone, is not practical. This is because a fingerprinter
 can hide this from us easily, if they wanted to.
@@ -873,7 +883,7 @@ use a suspicious name for a function. To give some examples:
 \textit{getCanvasFp}, \textit{getCanvasPrint}, \textit{canvasFingerprint}.
 We assume that any function would not be named in such a way if it did not
 indeed perform fingerprinting.
-The scripts using the suspicious names additionally showed other behavior
+The scripts using the suspicious names additionally showed other behaviour
 exhibiting the signs of fingerprinting.
 Looking for suspicious function names while scoring should be avoided,
 as adversaries can simply change the function names to avoid or
@@ -912,7 +922,8 @@ image on the site, and only load the actual image when needed.
 
 
 \section{Audio Fingerprinting}
-The distinct JavaScript interfaces related to audio present in our data set,
+\label{sec:audio_fingerprinting}
+The distinct JavaScript interfaces related to audio present in our dataset,
 as recorded by OpenWPM, are:
 \textit{AudioContext},
 \textit{OfflineAudioContext},
@@ -937,7 +948,7 @@ WHERE javascript.symbol LIKE '%audio%'
 
 \begin{table}
 \centering
-\caption{Behavior of Audio API Users}
+\caption{Behaviour of Audio API Users}
 \begin{tabular}{l r r}
     \toprule
     & amount & percentage \\
@@ -961,7 +972,7 @@ WHERE javascript.symbol LIKE '%audio%'
 
 The SQL query in Figure~\ref{code:audio_query} selects all sites that
 use a JavaScript interface or symbol related to audio.
-It returns 64 rows when executed on our data set, meaning there are 64 potential audio
+It returns 64 rows when executed on our dataset, meaning there are 64 potential audio
 fingerprinters, which represents about $1.2\%$ of our set.
 We have performed a manual analysis of these sites in regards to audio
 fingerprinting similar to the one we have performed for \textit{toDataURL}.
@@ -983,7 +994,7 @@ exactly like OpenWPM in our automated data collection.
 One of these sites has played audio, although via an embedded YouTube livestream.
 This, as far as we could tell, does not use the Audio API.
 
-Thus, we are confident that our data set indeed contains only a single legitimate use of
+Thus, we are confident that our dataset indeed contains only a single legitimate use of
 the Audio API.
 
 Table~\ref{table:audio_users} further shows the use of three prominent, reoccuring scripts, the most used
@@ -1004,7 +1015,7 @@ Thus, we also classify it as a fingerprinter.
 We refer to the final script as ``the b2c script'', although it may in fact be more than one distinct
 script. We have observed it to be served from mutliple different URLs,
 all beginning with \textit{api.b2c.com/api/init-}, and ending with a mix of letters and numbers and the \textit{.js} extension.
-All of these scripts were much too obfuscated to make any sense of. We have thus labeled their behavior ``inconclusive''.
+All of these scripts were much too obfuscated to make any sense of. We have thus labeled their behaviour ``inconclusive''.
 However, we assert that it is very likely that these scripts are indeed fingerprinters.
 OpenWPM has recorded 31 distinct symbols being accessed by these ``b2c'' scripts, among them
 those related to the Canvas API, Web Audio API, WebGL, \textit{localStorage}, \textit{sessionStorage},
@@ -1066,9 +1077,59 @@ different fonts \cite{nikiforakis2013cookieless}. If a measurement for a certain
 from that of a default fallback font, the fingerprinter can conclude that that particular font
 is installed.
 
-The specific JavaScript methods used are called \textit{offsetWidth} and \textit{offsetHeight},
-and are, again, not instrumented by OpenWPM. We have added the required instrumentation into
-the OpenWPM instance used by PrivacyScore for our implementation.
+\subsection{Secondary Crawl Results}
+The specific JavaScript methods used for non-canvas-based font fingerprinting are called
+\textit{offsetWidth} and \textit{offsetHeight}, and are, again, not instrumented by OpenWPM.
+We have added the required instrumentation into the OpenWPM instance used by PrivacyScore for our implementation.
+To test the instrumentation, we have performed a secondary crawl of the top 500 sites in
+our list (cf. Sec.~\ref{sec:acquiring_information}) with this instrumentation enabled.
+
+Of these 500 sites, 389 use both \textit{offsetWidth} and \textit{offsetHeight} on any HTMLElement.
+Because of the high fraction of sites that use these methods among the set,
+we don't simply pick a certain number of sites to analyse. We narrow down the likely fingerprinters
+by selecting only those sites that call the methods at least 30 times.
+We base this number on the findings of FPDetective (cf. Sec.~\ref{related_work:fpdetective}).
+We are left with 219 sites that call either or both of \textit{offsetWidth} and \textit{offsetHeight}
+at least 30 times.
+Of these 219 sites, we choose 75 at random and analyse their behavior further.
+We look for arrays of font names in the code, as well as the known magic strings, signs of other types
+of fingerprinting, and suspicious function names.
+
+\begin{table}
+\centering
+\caption{Results of secondar analysis regarding font fingerprinting.}
+\begin{tabular}{l r r}
+    \toprule
+    & amount & percentage \\
+    \midrule
+    \textbf{Analysed sites} & 75 & 100\% \\
+    \midrule
+    \textbf{Fingerprinting sites} & 5 & 7\% \\
+    Fingerprintjs2 & 3 & 4\% \\
+    PerimeterX & 1 & 1\% \\
+    Other & 1 & 1\% \\
+    \midrule
+    \textbf{Too obfuscated} & 7 & 9 \% \\
+    \midrule
+    \textbf{No suspicious behavior} & 63 & 84\% \\
+    \bottomrule
+\end{tabular}
+\label{table:offsetwidth_results}
+\end{table}
+
+
+The results are presented in Table~\ref{table:offsetwidth_results}. The vast majority of analysed sites
+shows no suspicious use of the \textit{offsetWidth} and \textit{offsetHeight} properties.
+That does not mean they do not fingerprint, but that they do not use these properties to fingerprint.
+Five sites have been identified as fingerprinters, three of which use the Fingerprintjs2 script
+(cf. Sec.~\ref{related_work:fingerprintjs2}), one uses a script by PerimeterX, which we have
+already mentioned in Section~\ref{sec:audio_fingerprinting}, and one seems to use
+a different solution.
+Seven sites were too obfuscated to make any sense of.
+
+We conclude that while the discussed properties can be used for fingerprinting,
+they are not very useful to incorporate into our scoring. Too many websites access these properties
+too many times, making their presence not especially suspicious.
 
 
 \section{WebGL Fingerprinting}
@@ -1088,12 +1149,12 @@ WHERE symbol LIKE '%getcontext%'
 
 \begin{table}
 \centering
-\caption{Behavior of WebGL Users}
+\caption{Behaviour of WebGL Users}
 \begin{tabular}{l r r}
     \toprule
     & amount & percentage \\
     \midrule
-    \textbf{analysed sites} & 75 & 100\% \\
+    \textbf{Analysed sites} & 75 & 100\% \\
     \midrule
     \textbf{Fingerprinting sites} & 34 & 45\% \\
     \midrule
@@ -1110,7 +1171,14 @@ WHERE symbol LIKE '%getcontext%'
 The results of our analysis, as displayed in Table~\ref{table:webgl_users}, again show that this
 API is used by many fingerprinters in our dataset.
 With WebGL, there is a higher number of sites which we have labeled ``inconclusive''.
-This is because \todo{warum ist das so? war halt irgendwie schwerer zu erkennen...}
+This is largely because many were too obfuscated to make sense of.
+
+Examples of legitimate use of the API include \url{pbskids.org}, which uses WebGL
+for a 2D game engine called PixiJS.\footnote{\url{http://www.pixijs.com/} Visited on May 8, 2018}
+Some other sites seem to use a media player with this API, like \url{geniuskitchen.com},
+which uses a player by Anvato.\footnote{\url{https://www.anvato.com/products/players/} Visited on May 8, 2018}
+One site, \url{emol.com}, uses \textit{videojs-panorama}, a library to create a
+360\degree video.\footnote{\url{https://github.com/yanwsh/videojs-panorama} Visited on May 8, 2018}
 
 As OpenWPM in its current version does not instrument calls to the WebGL API, we have to
 work around this by using the SQL query shown in Figure~\ref{code:webgl_query}.
@@ -1140,10 +1208,10 @@ GeForce GTX 970/PCIe/SSE2
 
 We have patched OpenWPM to be able to instrument the WebGL API.
 Specifically, we can instrument the \textit{WebGLRenderingContext}
-object, and have performed another crawl of the top 500 sites of our list (cf. Sec.~\ref{acquiring_information}),
+object, and have performed another crawl of the top 500 sites of our list (cf. Sec.~\ref{sec:acquiring_information}),
 while instrumenting specifically the method \textit{getExtension} of the \textit{WebGLRenderingContext} object.
 This method, when given the parameter \textit{WEBGL\_debug\_renderer\_info}, produces another object
-which reveals information about the vendor and model of the GPU of the host computer.
+which reveals information about the vendor and model of the GPU of the host computer.\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_debug_renderer_info}}
 This object does not hold any other information, and cannot be used for any purpose other than
 finding out the GPU vendor and model.
 The code in Figure~\ref{code:gpu_vendor} shows an example of the fingerprintable information
@@ -1154,7 +1222,7 @@ Of the 500 sites in the additional crawl, 22 used the method \textit{getExtensio
 used a script by PerimeterX to fingerprint, five fingerprinted otherwise, and the remaining five
 were either too obfuscated or did not fingerprint.
 
-We can conclude that the above behavior that can be used to find out the GPU vendor and model
+We can conclude that the above behaviour that can be used to find out the GPU vendor and model
 is a good indicator for fingerprinting, although our results are not based on as strong a dataset
 as other results presented by this thesis. Still, we contend that fetching this GPU information
 is suspicious enough to warrant a more negative rating in our scoring scheme.
@@ -1175,7 +1243,7 @@ WHERE symbol LIKE 'RTCPeerConnection%';
 
 \begin{table}
 \centering
-\caption{Behavior of WebRTC Users}
+\caption{Behaviour of WebRTC Users}
 \begin{tabular}{l r r}
     \toprule
     & amount & percentage \\
@@ -1201,10 +1269,21 @@ Nine sites were labeled as legitimate users of the WebRTC API. The remaining 51 
 Of these 51, 14 were too obfuscated to make sense of, and most, 37, used the same script
 served from the URL \url{https://static.adsafeprotected.com/sca.17.4.20.js}.
 We believe that this script enumerates browser features, based on many function definitions
-which try to access some web API, and return a boolean value representing either success
+which try to access some web API and return a boolean value representing either success
 or failure to access that API.
 However, we are not certain that it constructs a fingerprint in the traditional sense.
-\todo{Script genauer anschauen; ist schon sehr fingerprinty aber wer weiß}
+In fact, the script generates a hash value that is accessible from the JavaScript console
+of the developer tools of a browser, and this hash changes between reloads of the site,
+suggesting no strictly fingerprinting behavior. We stress, though, that we do not fully
+understand this script, and that it does access and somehow process fingerprintable
+system information.
+
+Legitimate users of the WebRTC API include:
+\begin{itemize}
+    \item \url{redbus.in}, which uses a script served by \url{gsecondgreen.com}. The latter of the two offers a ``customer engangement platform'', and seems to use WebRTC to send various information to a remote server. However, as far as we could tell, this does not include any kind of fingerprint.
+    \item \url{stripchat.com}, which uses Fingerprintjs2 to fingerprint, seems to use WebRTC legitimately to stream video and audio content from their performers to end users. Their script is also used by \url{xhamsterlive.com}.
+    \item \url{livejasmin.com}, which uses WebRTC to stream video and audio as well.
+\end{itemize}
 
 
 \section{Multiple Fingerprinting Techniques}
@@ -1219,10 +1298,10 @@ However, we are not certain that it constructs a fingerprint in the traditional 
     \midrule
     \textbf{analysed sites} & 60 & 100\% \\
     \midrule
-    1 & 15 & 25\% \\
-    2 & 20 & 33\% \\
-    3 & 13 & 22\% \\
-    4 & 9 & 15\% \\
+    1 & 17 & 23\% \\
+    2 & 21 & 28\% \\
+    3 & 26 & 35\% \\
+    4 & 9 & 12\% \\
     5 & 2 & 3\% \\
     \bottomrule
 \end{tabular}
@@ -1234,14 +1313,14 @@ to also be using another method.
 This is a reasonable assumption, as more techniques give more entropy, and more entropy makes a more
 unique and therefore better fingerprint.
 
-To substantiate our claim, we have analysed 60 sites which we have previously identified as fingerprinters.
+To substantiate our claim, we have analysed 75 sites which we have previously identified as fingerprinters.
 These sites were picked randomly from our set of already identified fingerprinters.
 
 We exclude the basic attributes, such as the \textit{userAgent}, when we count the methods used by a site.
 The counted methods are thus Audio-, Canvas-, Font-, WebGL- and WebRTC-Fingerprinting.
 All analysed sites also used basic attributes to enhance their fingerprint.
 
-The results are shown in Table~\ref{table:multiple_apis}, and support our assumption. A quarter of the fingerprinters
+The results are shown in Table~\ref{table:multiple_apis}, and support our assumption. About a quarter of the fingerprinters
 use one API to fingerprint, and the remainder use more than one.
 Between one and three APIs used are the most common cases, four and especially five different APIs are much less common.
 
@@ -1250,6 +1329,7 @@ to the basic browser attributes, but the majority of fingerprinters use more tha
 
 
 \section{Most Common Techniques}
+\label{sec:most_common_techniques}
 \begin{table}
 \centering
 \caption{Extrapolated Frequency of Fingerprinting Techniques}
@@ -1304,8 +1384,8 @@ to be a fingerprinter than not.
 
 We have also found certain giveaways of sites being fingerprinters.
 The \textit{mmmmmmmmmmlli} magic string is used exclusively by font fingerprinting scripts.
-The peculiar text \textit{Cwm fjordbank glyphs vext quiz} followed by an emoji is similarly used only
-by fingerprinters.
+The pangram \textit{Cwm fjordbank glyphs vext quiz} followed by an emoji is similarly used often
+and only by fingerprinters.
 Oftentimes, fingerprinter scripts contain very suspicious function names, such as \textit{getCanvasFingerprint}.
 While the absence of these details does not help in classifying a site,
 their presence can be used to instantly classify a site or script as a fingerprinter.
@@ -1341,7 +1421,7 @@ In Chapter~\ref{chap:data_acquisition}, we have shown many users of certain Java
 We can build upon this knowledge to score websites in regards to their likelihood to be fingerprinting.
 
 Our approach to implement automated fingerprinting detection is described in the following.
-The software will analyse the behavior of a website based on a data gathering by OpenWPM.
+The software will analyse the behaviour of a website based on a data gathering by OpenWPM.
 We will extract all information relevant to fingerprinting from the database,
 and present this to the user of the detection software.
 We will highlight any giveaways of fingerprinting, such as included magic strings
@@ -1375,6 +1455,206 @@ if a site uses no fingerprintable attributes or APIs.
 This is a rare case, as many modern sites use at least the \textit{languages}
 attribute to set the user's language, or the \textit{userAgent} string to
 perform certain user-experience enhancing optimizations.
+We do this because, as the study by Friedrich-Alexander-University (cf. Sec.~\ref{related_work:fau})
+has shown, even just the \textit{userAgent} can be unique among a large set of users.
+
+\begin{figure}
+\label{code:scoring_algorithm}
+    \begin{minted}[fontsize=\footnotesize]{python}
+def compute_score(results):
+    score = 0
+
+    # API use
+    api_count = 0
+
+    for api in APIs:
+        if api in results:
+            api_count += 1
+            
+            if api in ["canvas", "audio"]:
+                score += 1  # extra score
+
+    score += int(api_count / 2)
+
+    # font use
+    if 'mmmmmmmmmmlli' or 'Cwm fjordbak ...' in results.magic_strings:
+        score += 5
+
+    if results.fonts_set > 5 and results.measure_text_calls > 0:
+        score += 1
+
+    # known fingerprinting scripts
+    for script in known_scripts:
+        if script in results.scripts:
+            score += 5
+
+    # suspicious function names
+    for name in suspicious_names:
+        if name in results.names:
+            score += 1
+
+    # basic attributes
+    if results.basic_attributes_count > 0:
+        score += 1
+
+    return score
+\end{minted}
+\caption{Our scoring algorithm in Python-like pseudo code.}
+\end{figure}
+
+We present the algorithm as pseudo code in Figure~\ref{code:scoring_algorithm}.
+The Canvas API must not only simply be used in any way to contribute
+to the scoring, but rather one of \textit{toDataURL} or \textit{getImageData} (or both) need to be used
+for it to be counted. As we have shown the Audio and Canvas APIs to be especially suspicious
+when it comes to fingerprinting, their presence gives an extra score point.
+
+A score of zero corresponds to the PrivacyScore rating of ``doubleplusgood'', suggesting
+no fingerprintable APIs or attributes are used. A score of five means a ``critical'' rating,
+suggesting the use of many fingerprintable attributes or APIs, or the use of a known fingerprinting
+script or magic string. A score larger than five is reset to be exactly five, as this is already
+the maximum rating.
+A scoring of all 4929 sites in our dataset gives us an arithmetic mean of
+about 1.97, and a standard deviation of about 1.55, suggesting that the average site
+is scored ``neutral'', but that there is a fairly high variability of scores.
+
+\begin{table}
+\centering
+\caption{Scoring results for fingerprinters}
+\begin{tabular}{c c}
+    \toprule
+    \textbf{score} & \textbf{number of sites} \\
+    \midrule
+    0 & 0 \\
+    1 & 1 \\
+    2 & 1 \\
+    3 & 4 \\
+    4 & 5 \\
+    5 & 19 \\
+    \midrule
+    \textbf{total} & 30 \\
+    \bottomrule
+\end{tabular}
+\label{table:scoring_results_fp}
+\end{table}
+
+\begin{table}
+\centering
+\caption{Scoring results for non-fingerprinters}
+\begin{tabular}{c c}
+    \toprule
+    \textbf{score} & \textbf{number of sites} \\
+    \midrule
+    0 & 0 \\
+    1 & 14 \\
+    2 & 4 \\
+    3 & 12 \\
+    4 & 0 \\
+    5 & 0 \\
+    \midrule
+    \textbf{total} & 30 \\
+    \bottomrule
+\end{tabular}
+\label{table:scoring_results_nonfp}
+\end{table}
+
+To evaluate our algorithm, we score 30 sites which we have manually identified as fingerprinters,
+and 30 sites which we have identified as non-fingerprinters.
+These sites were picked at random from our dataset.
+The results are shown in Table~\ref{table:scoring_results_fp} for the fingerprinting sites,
+and Table~\ref{table:scoring_results_nonfp} for the non-fingerprinting sites.
+
+Table~\ref{table:scoring_results_fp} shows that most fingerprinting sites get a score of
+three or above, with a heavy bias for a score of five.
+There are two outliers with scores of one and two respectively. The site with the score of two is \url{kp.ru},
+which uses just the Audio API to fingerprint, and is thus an anomaly in our dataset.
+The site that was assigned a score of one is \url{zoomit.ir}, which uses only the WebRTC API,
+and is thus another anomaly. We base this on our findings presented in Section~\ref{sec:most_common_techniques},
+where we showed that the Audio and WebRTC APIs are the least used in our dataset.
+If we map the scores to the rating system of PrivacyScore, most fingerprinting sites would have been scored
+with a rating of ``bad'' or ``critical''.
+
+Table~\ref{table:scoring_results_nonfp} shows that most non-fingerprinting sites
+have a score of three or below.
+No site was given a score of four or five, but a score of zero is also absent.
+This is expected, as we only give a score of zero if absolutely no fingerprintable
+attributes or APIs are used.
+If we map the scores to the rating system of PrivayScore, most non-fingerprinting sites would
+have been scored with a rating of ``neutral'' or ``good'', but a significant portion
+would have been scored with a ``warning'' rating.
+
+We conclude that fingerprinting sites will generally be given a score of three or more,
+and non-fingerprinting sites will generally be given scores of three or below.
+Give that a score of three maps to the rating ``warning'', and that most fingerprinters
+score above three, we contend that this is acceptable.
+
+\begin{table}
+\centering
+\caption{Second scoring results for fingerprinters}
+\begin{tabular}{c c}
+    \toprule
+    \textbf{score} & \textbf{number of sites} \\
+    \midrule
+    0 & 0 \\
+    1 & 0 \\
+    2 & 0 \\
+    3 & 5 \\
+    4 & 3 \\
+    5 & 22 \\
+    \midrule
+    \textbf{total} & 30 \\
+    \bottomrule
+\end{tabular}
+\label{table:scoring_results_fp_2}
+\end{table}
+
+\begin{table}
+\centering
+\caption{Second scoring results for non-fingerprinters}
+\begin{tabular}{c c}
+    \toprule
+    \textbf{score} & \textbf{number of sites} \\
+    \midrule
+    0 & 0 \\
+    1 & 28 \\
+    2 & 2 \\
+    3 & 0 \\
+    4 & 0 \\
+    5 & 0 \\
+    \midrule
+    \textbf{total} & 30 \\
+    \bottomrule
+\end{tabular}
+\label{table:scoring_results_nonfp_2}
+\end{table}
+
+To consolidate this conclusion, we have scored 30 different fingerprinters
+as well as 30 different non-fingerprinters. The results are shown in Table~\ref{table:scoring_results_fp_2}
+for the fingerprinters and Table~\ref{table:scoring_results_nonfp_2} for the non-fingerprinters.
+
+The fingerprinters in this set show roughly the same distribution as with the previous set. There are no
+scores below three, and most scores are a five. The non-fingerprinters show even better scores than
+the previous set, with almost all scores at one, two scores at two, and no other scores higher
+than that. We conclude that our algorithm should perform well, and produce few or no
+false positives or negatives.
+
+
+\section{Implementation Details}
+The various tests that PrivacyScore performs are structured into different \textit{test\_suites}.
+As our algorithm relies entirely on data collected by OpenWPM, we integrate our test
+into the already existant \textit{openwpm} test suite. We add a module in the \textit{test\_suites}
+directory which can analyse an OpenWPM database and produce the required data to be used
+by our algorithm, add an import to the \textit{openwpm} test suite, and a call to our newly
+added module. A screenshot of fingerprinting-related results that can now be seen in PrivacyScore
+is shown in Figure~\ref{image:privacyscore}.
+Physical distributions of this thesis will include the patched version of PrivacyScore
+on the attached USB drive.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{images/privacyscore.png}
+\caption{Screenshot of a fingerprinting result in a PrivacyScore results page. This particular result was generated for \url{http://reddit.com}.}
+\label{image:privacyscore}
+\end{figure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1386,81 +1666,77 @@ perform certain user-experience enhancing optimizations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusion and Outlook}
 \label{chap:conclusion}
-This thesis was terrific and there's lots of cool stuff to look out for.
+In this chapter, we summarize the findings and accomplishments of the thesis,
+as well as its limitations and shortcomings. We will also suggest topics for future work.
+
+\section{Summary}
+Many websites on the internet today wish to track their visitors. Setting a cookie
+is one option these sites have. However, a user can delete a cookie, and EU law
+even requires websites to display a notice when they use cookies.
+A browser- or device-fingerprint can be generated instead. Using the right attributs
+and APIs, it can contain enough entropy to uniquely identify a single user among a set
+of hundreds of thousands.
+
+We have shown that the Audio, Canvas, Font, WebGL, and WebRTC APIs are all used
+for fingerprinting, and oftentimes, more than one API is used to construct a fingerprint.
+In addition to these APIs, basic attributes of the browser, such as the \textit{userAgent}
+string, are used to enhance a fingerprint.
+
+We have implemented an algorithm, which we have integrated into PrivacyScore. This algorithm
+is able to reliably identify websites that exhibit fingerprinting behavior.
+We have tested this algorithm on a set of 120 sites, and it is backed by analyses we have performed
+on random samples of a large, 4929 site dataset.
+
+We have not explored APIs that have not already been mentioned in related work, and thus
+our implementation may miss fingerprinters that use such an API.
+Non-canvas based font fingerprinting can potentially be detected by our implementation
+via the \textit{offsetWidth} and \textit{offsetHeight} properties, but we have shown
+this to be not practical.
+More detailed WebGL instrumentation was not available when we collected our dataset,
+and we have performed only a limited analysis on the \textit{WebGLRenderingContext},
+using instrumentation we have patched into OpenWPM.
 
 \section{Future Work}
-\todo{mention WebAssembly}
+\subsection{Font Fingerprinting}
+Our implementation can detect canvas based font fingerprinting. We have shown that we can
+potentially also detect non-canvas based fingerprinting, though we have deemed our approach
+impractical. We leave better detection of font enumeration with the goal of creating a fingerprint
+to future work.
+
+\subsection{WebGL}
+As WebGL is not instrumented by OpenWPM at this time, we have patched instrumentation
+of the \textit{WebGLRenderingContext} into the OpenWPM version used by
+our instance of PrivacyScore. We have not performed detailed analyses of WebGL fingerprinting
+mechanics, and leave this to be done in future work.
+
+\subsection{Fingerprinting Defense}
+This thesis has looked exclusively at fingerprinting detection. We have not explored
+potential defenses against it. The obvious starting point for fingerprinting defense
+are web browser. Firefox, for example, already takes certain precautions against fingerprinting,
+like with the Gamepad API.\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Gamepad\_API/Using\_the\_Gamepad\_API}}
+However, modern browsers still expose a lot of fingerprintable information.
+Some APIs are even used primarily for fingerprinting or other malicious behavior.
+For example, we have found only a single legitimate use of the Audio API.
+We leave considerations on possible changes to browser behavior for future work.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Chapter End                                                              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% }}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Appendix                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-% \begingroup
-% \renewcommand{\cleardoublepage}{}
-% \renewcommand{\clearpage}{}
-% \chapter{Methods and Approach} % {{
-% \endgroup
-%
-% \section{False Positives}
-% Filtering false positives will prove to be the most challenging problem in this context.
-% Requesting fonts via JavaScript might be a dead giveaway
-% that fingerprinting code is, in fact, fingerprinting code. However, it might cause legitimate code, such
-% as a multimedia player, to be mistaken for fingerprinting code, as well, even though it has a legitimate
-% reason and perhaps a necessity to know a system's installed fonts.
-% Meta-data can and possibly must be used to filter these; a list can be compiled of popular JavaScript libraries with legitimate,
-% yet fingerprinting-like behavior, and then extended through analysis of collected data (see Technology below).
-%
-% All results must be evaluated regarding both precision and recall. Suppose a fingerprinting-recognition software
-% analyses 100 websites. It reports that 50 of them employ fingerprinting, and that the other 50 do not.
-% In reality, however, only 40 of the 50 ``positives'' actually do employ fingerprinting, but a total
-% of 80 of all the analysed sites employ it.
-% The precision of this software would then be $40/50 = 4/5$, as 40 out of 50 of its reported positives were correct.
-% Its recall would be $40/80 = 1/2$, as it only reported 40 positives out of 80 actual positives.
-% One might say that precision describes the usefulness of the results, while recall describes their completeness.
-%
-% \section{Metric}
-% If a website includes a well-known browser fingerprinting library, or makes many calls to JavaScript functions that return
-% data which is useful in building a fingerprint, one can conclude: this website is very likely generating,
-% saving, and possibly distributing a browser's fingerprint; simply put: it performs browser fingerprinting.
-% However, some modern websites may exhibit some similar traits or behavior that can be used to construct a fingerprint
-% for reasons other than identification. Analyzing installed fonts has an obvious, legitimate use: correctly displaying
-% text. Thus, it is important to work out a metric or rating system of some sort, which can
-% (somewhat) reliably represent the likelihood that fingerprinting is, in fact, taking place.
-% Acar et al. assert that the more fonts are being requested, the more likely a website is to
-% be practicing fingerprinting \cite{DBLP:conf/ccs/AcarJNDGPP13}.
-% This is based on findings of Eckersley, of the Panopticlick project \cite{eckersley2010unique}.
-% Acar et al. further state that they classify a JavaScript file as a fingerprinter ``when it loads
-% more than 30 fonts, enumerates plugins or mimeTypes, detects screen and navigator properties, and sends the
-% collected data back to a remote server'' \cite{DBLP:conf/ccs/AcarJNDGPP13}.
-% Englehardt and Narayanan present a metric to detect Canvas-based fingerprinting by specifying certain
-% attributes such a Canvas, and the code using it, should have \cite{DBLP:conf/ccs/EnglehardtN16}.
-% The above considerations form a good basis upon which to build a reliable metric, which will have to be
-% evaluated further during the implementation process.
-%
-% \section{Scope}
-% Finding or creating a single website which collects a fingerprint, and basing development of fingerprinting
-% recognition on it, will not yield reliable or representative results. It is imperative to test
-% the created recognition software against a multitude of fingerprinting libraries and users of these.
-% It will be prudent to test the software against, say, the top 500 websites as ranked by
-% Alexa\footnote{\url{http://www.alexa.com/topsites}}, as there is a high likelihood these sites employ
-% a multitude of techniques to track their users, but there is no way to be sure if some of these sites wouldn't
-% generate false positives.
-% The safest way would be to create websites which employ an array of fingerprinting libraries both preexisting and
-% implemented by the author, and then comparing the employed JavaScript calls with those from popular websites.
-% The best approach seems to be a combination of the above; create a set of fake websites, some of which employ fingerprinting,
-% others mimicking it. Then the results from analyzing them will be compared to the results from analyzing top Alexa sites.
-%
-% % }}
+\csundef{@beforebegin@minted@hook}
+\csundef{@afterend@minted@hook}
 
 \begin{appendices}
 
 \chapter{OpenWPM Browser Params}
 The following configuration for OpenWPM's \textit{default\_browser\_params} was used.
-\todo{add a bit more description, why not?}
+
 
 \definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
 \setminted{fontsize=\footnotesize,bgcolor=mintedbg}
@@ -1567,7 +1843,7 @@ long lines to make the code fit onto the page.
 The code is otherwise shown as-is, with not modifications that alter its functionality.
 
 
-\chapter{\textit{mmmmmmmmmmlli} Magic String Use}
+\chapter{Font Fingerprinting Example}
 \begin{figure}
 \begin{minted}[linenos]{javascript}
 tb = function() {
@@ -1633,7 +1909,7 @@ The code in Figure~\ref{app:mmmmmmmmmmlli} was taken from a script served by \ur
 It is not a complete script, but rather just one function definition in a larger script.
 We have ``beautified'' the code using DuckDuckGo's JavaScript beautifier, written by Akansh Gulati\footnote{\url{https://github.com/akanshgulati}}.
 We have also modified the beautified code further to eliminate long lines, thus allowing it to be displayed
-on this page.
+on the page.
 We have not made any functional modifications.
 
 The code demonstrates the use of the \textit{mmmmmmmmmmlli} magic string in a \textit{span} HTML element.
@@ -1644,13 +1920,13 @@ In the code, multiple \textit{span} elements are created and inserted into the D
 each containing the magic string with a font size of 72 pixels, and with their font-family
 set to different combinations of fonts and the font types ``monospace'', ``sans-serif'' and ``serif''.
 These elements are invisible from the user.
-Their \textit{offsetWidth} and \textit{offsetHeight} properties are read, saved, and
+Their \textit{offsetWidth} and \textit{offsetHeight} properties are read, compared, and
 used for fingerprinting.
 These properties can reveal whether a font is available on the system, because
 if the font is not available, they will be the same as for the default, fallback
-font. So, if they differ for a certain font, that font is installed. If they do not,
+font. So, if they differ for a certain font, that means the font is installed. If they do not,
 the font is not installed.
-The list of fonts used contains 300 entries, but is not shown for the sake of brevity.
+The list of fonts used in the script contains 300 entries, but is not shown for the sake of brevity.
 
 
 \end{appendices}
@@ -1658,5 +1934,28 @@ The list of fonts used contains 300 entries, but is not shown for the sake of br
 \clearpage
 
 \printbibliography
+
+\newpage
+Ich bin damit einverstanden, dass meine Arbeit in den Bestand der Bibliothek eingestellt wird.
+\\
+\\
+\\
+\\
+\begin{tabular}{lp{5em}l}
+ \hspace{5cm}   && \hspace{3cm} \\\cline{1-1}\cline{3-3}
+ Ort, Datum     && Unterschrift
+\end{tabular}
+
+\newpage
+Hiermit versichere ich an Eides statt, dass ich die vorliegende Arbeit im Studiengang Bachelor of Science Informatik selbstständig verfasst und keine anderen als die angegebenen Hilfsmittel --- insbesondere keine im Quellenverzeichnis nicht benannten Internet-Quellen --- benutzt habe. Alle Stellen, die wörtlich oder sinngemäß aus Veröffentlichungen entnommen wurden, sind als solche kenntlich gemacht. Ich versichere weiterhin, dass ich die Arbeit vorher nicht in einem anderen Prüfungsverfahren eingereicht habe und die eingereichte schriftliche Fassung der auf dem elektronischen Speichermedium entspricht.
+\\
+\\
+\\
+\\
+
+\begin{tabular}{lp{5em}l}
+ \hspace{5cm}   && \hspace{3cm} \\\cline{1-1}\cline{3-3}
+ Ort, Datum     && Unterschrift
+\end{tabular}
 
 \end{document}
