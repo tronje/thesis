@@ -84,8 +84,8 @@
 \AfterEndEnvironment{minted}{\end{mdframed}}
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO: #1}}}
+
 \newcommand{\cmark}{\textcolor{green}{\ding{51}}}
-% \newcommand{\xmark}{\textcolor{red}{\ding{55}}}
 \newcommand{\xmark}{\textcolor{red}{-}}
 \newcommand{\qmark}{\textcolor{orange}{\textbf{?}}}
 
@@ -103,43 +103,6 @@
 
 \frenchspacing
 
-% \maketitle
-
-% \newpage
-% \thispagestyle{empty}
-% % \addcontentsline{toc}{chapter}{Muster des Deckblatts}
-% \begin{titlepage}% {{{
-% \includegraphics[width=6.8cm]{images/up-uhh-logo-u-2010-u-farbe-u-rgb.pdf}
-% \begin{center}\large
-% 	% Universität Hamburg \par
-% 	% Fachbereich Informatik
-%     \vfill
-% 	\makeatletter
-% 	{\Large\textsf{\textbf{\@title}}\par}
-% 	\makeatother
-% 	\vfill
-%     A thesis submitted for the degree of \\
-%     \textit{Bachelor of Science} \\
-%     in \\
-%     \textit{Computer Science}
-% 	\vfill
-%     by
-% 	\par\bigskip
-% 	\makeatletter
-% 	{\@author} \par
-% 	\makeatother
-% 	born 11. August 1994 in Hamburg \par
-% 	matriculation number 6435002
-% 	\vfill
-% 	\makeatletter
-% 	submitted {\@date}
-% 	\makeatother
-% 	\vfill
-% 	Supervisor: Dipl.-Inf. Tobias Müller \par
-% 	First reviewer: Prof. Dr.-Ing. Hannes Federrath \par
-% 	Second reviewer: Prof. Dr. Dominik Herrmann
-% \end{center}
-% \end{titlepage}% }}}
 
 \newpage
 \thispagestyle{empty}
@@ -178,12 +141,10 @@
 \null\newpage
 
 \chapter*{Abstract}
-% Worum geht es, warum ist das Thema interessant/wichtig, wie bist du vorgegangen, was kam heraus, was bedeutet das für die Zukunft oder was haben wir durch die Arbeit gelernt? 
-
 Many websites use cookies or other means to track users across the web. This is often
-done for marketing or advertising purposes. Oftentimes, cookies are insufficient to reliably
-track a user, as they can be deleted by the user. Alternatively, to track a user, a fingerprint
-of their device and web browser can be constructed, which can identify the user uniquely
+done for marketing or advertising purposes. Oftentimes, cookies are insufficient to track reliably,
+as they can be deleted by the user. Alternatively, a fingerprint
+of the device and web browser of the user can be constructed, which can identify them uniquely
 within a large set of users.
 
 This thesis aims to explore modern fingerprinting techniques, and to implement
@@ -196,8 +157,14 @@ analysed many sites that use fingerprintable attributes or APIs manually,
 and implemented an automated fingerprinting detection method into PrivacyScore,
 a service that can scan and analyse a website in regards to its privacy and security.
 
+\newpage
+\null\newpage
+
 \setcounter{tocdepth}{1}
 \tableofcontents
+
+\newpage
+\null\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Chapter Start                                                            %%
@@ -205,7 +172,7 @@ a service that can scan and analyse a website in regards to its privacy and secu
 \chapter{Introduction}
 \label{chap:introduction}
 
-When browsing the web, users can be tracked through the use of cookies, which store information on the user's computer
+When browsing the web, users can be tracked through the use of cookies, which store information on the computer of a user
 that can also be accessed by a remote server.
 If users wish not to be trackable, they can modify or delete any cookie as they see fit.
 There are, however, other methods of uniquely identifying users and tracking them during their use of the internet,
@@ -213,7 +180,7 @@ which are not as easily mitigated as cookies \cite{am_i_unique}. One of these me
 and it will be the focus of this thesis.
 
 Browser fingerprinting, also known as device fingerprinting, and in the following often simply referred to as ``fingerprinting'',
-works by analyzing a web browser's configuration and settings; mostly installed fonts and HTML5 canvas behaviour
+works by analyzing the configuration and settings of a web browser. This can mean installed fonts and HTML5 canvas behaviour
 \cite{DBLP:conf/ccs/EnglehardtN16}, as well as
 language settings, time zone settings, installed add-ons, and more. Flash is also sometimes used, though
 its end-of-life lies in the foreseeable future, reportedly in the year
@@ -236,7 +203,7 @@ We have therefore implemented a technique to recognize when a website is deployi
 and along the way explored the common techniques used to construct a fingerprint. The resulting software has been integrated into
 PrivacyScore\footnote{\url{https://privacyscore.org}}, a web-service to test and rank websites according to the extent to which they
 respect user privacy \cite{privacyscore}.
-Informing users about websites they use and their treament of sensitive information
+Informing users about websites they visit and their treament of sensitive information
 can be seen as a different kind of defense against the violation of privacy that is fingerprinting.
 
 \section{Motivation}
@@ -247,7 +214,7 @@ in the context of software.
 We aim to analyse the current state of fingerprinting, and contribute to keeping up with modern privacy-violating
 techniques.
 
-Tracking a user does not simply mean recognizing whether a visitor to one's website is a new or an existing user.
+Tracking a user does not simply mean recognizing whether a visitor to a website is a new or an existing user.
 Identifying information can be passed on or sold to partners, advertisers, or even governments, in order to
 construct a rich browsing history of a user. Users are required by EU law to be informed of cookies being set
 by websites, yet fingerprinting can and does happen quietly.\footnote{\url{http://ec.europa.eu/ipg/basics/legal/cookies/index\_en.htm\#section\_2} Visited on May 3, 2018}
@@ -262,7 +229,7 @@ referenced throughout this thesis.
 Throughout the thesis, terms such as ``fingerprint'', ``browser fingerprint'', etc.
 will be used largely interchangeably.
 A fingerprint, in most contexts, is something that can uniquely identify something else.
-The obvious example is a human's fingerprint, which is unique to each finger of each human,
+The obvious example is the fingerprint of a human, which is unique to each finger of each human,
 with very few exceptions, if any.\footnote{\url{https://www.interpol.int/INTERPOL-expertise/Forensics/Fingerprints}}
 
 \subsection{Entropy}
@@ -274,8 +241,8 @@ Entropy is often measured in bits, because it measures the different
 possible values something can take.
 To give an example, the outcome of a coin toss has one bit of entropy,
 as it can have two different values: heads or tails.
-A random, unknown human's identity contains about 33 bits of entropy,
-as two to the power of 33 is 8 billion, and there are some 7.6 billion humans
+The identity of a random, unknown person contains about 33 bits of entropy,
+as two to the power of 33 is 8 billion, and there are some 7.6 billion people
 alive at the time of writing.
 If a browser fingerprint can provide 33 bits of information, it can be used
 to uniquely identify any person, so long as all fingerprints are unique.
@@ -344,7 +311,7 @@ by the device the browser is running on. Apple's emoji look different from Googl
 emoji, for instance.\footnote{\url{https://emojipedia.org/apple/}}\footnote{\url{https://emojipedia.org/google/}}
 If emoji are not supported, fallback behaviour often means that black squares will
 be drawn in their place.
-Thus, drawing simple emoji on a canvas can give up information about a device's vendor.
+Thus, drawing simple emoji on a canvas can give up information about the vendor of a device.
 A similar approach can be taken with fonts.
 Creating a WebGL rendering context and rendering images on it can reveal
 information about the GPU and associated driver software of the host device.
@@ -370,37 +337,8 @@ Both are detrimental to the results of the software and thus must be minimized.
 \textit{3. How do multiple different fingerprinting techniques relate?}\\
 We assume that a service provider is more likely to use more than one fingerprinting technique,
 and that the majority of fingerprinters also use the highest amount of different techniques.
-Is this the case? Which techniques are most often used together? Why?
+Is this the case? Which techniques are most often used together?
 
-
-% \subsection{What are the most commonly used fingerprinting methodologies?}
-% Methods to fingerprint change. Flash, for example, can be used to construct a fingerprint, but is expected
-% to be used less and less, since its end of life has been announced.
-% So, what are the most-used methods \textit{today}, and how much will these change over time? Which methods
-% can be expected to still be used in a year, and which will be deprecated soon?
-%
-% \subsection{What are the most commonly used fingerprinting libraries and how can they be found?}
-% Perhaps the most used library is a closed-source, proprietary product by some large conglomerate,
-% with no publicly available information. If its use can be reliably recognized, many websites could be found guilty
-% almost immediately. This, however, isn't a given, and it may take considerable effort to answer this question.
-%
-% \subsection{How can false positives be minimized?}
-% False positives, i.e. websites that are identified as fingerprinters, but don't actually employ any such technology,
-% are detrimental to the overall results of the software. How can they be minimized or, ideally, eliminated?
-%
-% \subsection{What does a good/fair metric look like?}
-% The impact of false positives can be diminished by employing a rating system or metric to rate a website's
-% ``fingerprinting score''. Instead of reporting boolean results (true or false), the software should
-% report a number or score that represents the likelihood of fingerprinting taking place, as determined by the software.
-% How is such a score calculated, and which attributes are used in this calculation?
-%
-% \subsection{Can all this be achieved with acceptable performance?}
-% This is as much a leading question as it is a goal: the software \textit{must} exhibit adequate performance.
-% Since a key component of the stated goal is to integrate the software into \url{https://privacyscore.org},
-% it must be able to analyse a website within seconds, to allow acceptable performance of PrivacyScore itself.
-% If the software were designed to simply be run once for some large number of websites, so that the results
-% could be displayed, it would be fine if it took some arbitrary amount of time. But in order to be useful
-% in the desired context, it is imperative that performance is at least something to be kept in mind.
 
 \section{Organization}
 The structure of this thesis is shown in the following.
@@ -467,7 +405,6 @@ Its purpose is to educate users about fingerprinting.
 Fingerprintjs2, which is discussed in Section~\ref{related_work:fingerprintjs2}.\footnote{\url{https://github.com/DIVERSIFY-project/amiunique/blob/master/website/public/javascripts/webGL.js\#L2}}
 
 
-% FIXME there's a new version of Panopticlick that was released after the paper. Does it include canvas fingerprinting?
 \subsection{Panopticlick}
 \label{related_work:panopticlick}
 The EFF's Panopticlick project is similar to \textit{Am I Unique?}, in that it aims to learn and inform about
@@ -586,7 +523,7 @@ framework called \textit{FPDetective}.
 \textit{PhantomJS} to log JavaScript function calls and \textit{Chromium} to log Flash actions.
 Much like OpenWPM, their crawler logs accesses to certain browser and device properties, such as
 those contained within the \textit{window.navigator} object.
-Popular attributes like the HTML5 Canvas and WebGL were ignored in the study and by the framework's logging.
+Popular attributes like the HTML5 Canvas and WebGL were ignored in the study and by the logging of the framework.
 
 Partly automated, their process consisted of an automated analysis in regards to font fingerprinting,
 and a manual analysis of JavaScript and decompiled Flash code.
@@ -597,8 +534,8 @@ or mimeTypes, detects screen and navigator properties, and sends the collected d
 \cite{DBLP:conf/ccs/AcarJNDGPP13}.
 
 As Flash is nearing its end-of-life, this thesis opts not to analyse Flash programs
-delivered by websites, which means \textit{FPDetective}'s extensive work on Flash-based fingerprinting
-is of little use for us.
+delivered by websites, which means the extensive work on Flash-based fingerprinting
+by \textit{FPDetective} is of little use for us.
 
 
 \subsection{OpenWPM}
@@ -692,23 +629,14 @@ visitors.\footnote{\url{https://www.alexa.com/topsites}}
 We have analysed the top 5000 websites, as described by a version of this list acquired from
 \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip} on December 19, 2017.
 
-Multiple datasets based on this list were gathered. Due to timeouts or other
-errors, not all 5000 sites were actually crawled each time.
-The primary dataset we used was crawled on January 27, 2018, and includes 4929 sites with distinct URLs. Some of these sites
+Due to timeouts or other errors, not all 5000 sites were actually crawled.
+The dataset we used was crawled on January 27, 2018, and includes 4929 sites with distinct URLs. Some of these sites
 may be duplicates of each other. For instance, the URL \url{https://fbcdn.net/} for Facebook's content delivery
 network simply points to \url{https://facebook.com/}, both of which are included in the dataset.
 
-We make the distinction between the primary dataset and secondary datasets.
-We have run all analyses on the primary dataset, and we will show
-that the noted behaviour is consistent by repeating some analyses
-on the secondary sets.
-We do this because running all analyses on all sets is beyond the time
-constraints of this work.
-In the following, we will refer to the primary dataset as simply ``the dataset''.
-
 \section{Data Properties}
 \label{section:data_properties}
-In this section, we will give an overview of basic properties of the primary dataset,
+In this section, we will give an overview of basic properties of our dataset,
 with special regard to their relevance for fingerprinting.
 Table~\ref{table:dataprops} shows some of these properties.
 
@@ -893,7 +821,7 @@ limit detection, as many scripts already do through obfuscation.
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{images/fjordbank.png}
-\caption{Pangram with emoji as used by \textit{Am I Unique?}, among others}
+\caption{Pangram with emoji as used by \textit{Am I Unique?}, among others.}
 \label{code:pangram}
 \end{figure}
 
@@ -1000,7 +928,7 @@ the Audio API.
 Table~\ref{table:audio_users} further shows the use of three prominent, reoccuring scripts, the most used
 of which is one provided by PerimeterX\footnote{\url{https://www.perimeterx.com/}}.
 PerimeterX offers ``Bot Detection and Anti Bot Protection with Unparalleled Accuracy'',
-according to their website's home page. To this end, they seem to construct a browser fingerprint.
+according to the home page of their website. To this end, they seem to construct a browser fingerprint.
 Their script accesses numerous properties of the \textit{window.navigator} object, uses \textit{toDataURL},
 \textit{WebGL}, the Web Audio API, and enumerates 32 different fonts.
 
@@ -1178,7 +1106,7 @@ for a 2D game engine called PixiJS.\footnote{\url{http://www.pixijs.com/} Visite
 Some other sites seem to use a media player with this API, like \url{geniuskitchen.com},
 which uses a player by Anvato.\footnote{\url{https://www.anvato.com/products/players/} Visited on May 8, 2018}
 One site, \url{emol.com}, uses \textit{videojs-panorama}, a library to create a
-360\degree video.\footnote{\url{https://github.com/yanwsh/videojs-panorama} Visited on May 8, 2018}
+360\degree \ video.\footnote{\url{https://github.com/yanwsh/videojs-panorama} Visited on May 8, 2018}
 
 As OpenWPM in its current version does not instrument calls to the WebGL API, we have to
 work around this by using the SQL query shown in Figure~\ref{code:webgl_query}.
@@ -1289,25 +1217,6 @@ Legitimate users of the WebRTC API include:
 \section{Multiple Fingerprinting Techniques}
 \label{sec:correlation}
 
-\begin{table}
-\centering
-\caption{Numbers of Fingerprinting APIs Used}
-\begin{tabular}{l r r}
-    \toprule
-    APIs used & amount & percentage \\
-    \midrule
-    \textbf{analysed sites} & 60 & 100\% \\
-    \midrule
-    1 & 17 & 23\% \\
-    2 & 21 & 28\% \\
-    3 & 26 & 35\% \\
-    4 & 9 & 12\% \\
-    5 & 2 & 3\% \\
-    \bottomrule
-\end{tabular}
-\label{table:multiple_apis}
-\end{table}
-
 We assume that a site which was identified to fingerprint using one method is likely
 to also be using another method.
 This is a reasonable assumption, as more techniques give more entropy, and more entropy makes a more
@@ -1327,25 +1236,28 @@ Between one and three APIs used are the most common cases, four and especially f
 We conclude that it is not especially rare for a site to use only one fingerprintable API in addition
 to the basic browser attributes, but the majority of fingerprinters use more than one such API.
 
+\begin{table}
+\centering
+\caption{Numbers of Fingerprinting APIs Used}
+\begin{tabular}{l r r}
+    \toprule
+    APIs used & amount & percentage \\
+    \midrule
+    \textbf{analysed sites} & 60 & 100\% \\
+    \midrule
+    1 & 17 & 23\% \\
+    2 & 21 & 28\% \\
+    3 & 26 & 35\% \\
+    4 & 9 & 12\% \\
+    5 & 2 & 3\% \\
+    \bottomrule
+\end{tabular}
+\label{table:multiple_apis}
+\end{table}
+
 
 \section{Most Common Techniques}
 \label{sec:most_common_techniques}
-\begin{table}
-\centering
-\caption{Extrapolated Frequency of Fingerprinting Techniques}
-\begin{tabular}{l c c c}
-    \toprule
-    & Fingerprinters & Total API Use & Estimated Fingerprinters \\
-    \midrule
-    Audio & 72\% & 64 & 1\% \\
-    Canvas & 67\% & 768 & 10\% \\
-    WebGL & 45\% & 438 & 4\% \\
-    WebRTC & 20\% & 281 & 1\% \\
-    \bottomrule
-\end{tabular}
-\label{table:technique_frequency}
-\end{table}
-
 Based on our findings, we can extrapolate an estimate for the most commonly used fingerprinting
 techniques.
 Table~\ref{table:technique_frequency} shows basic estimations of the total fingerprinters
@@ -1362,10 +1274,29 @@ That means that the total number of sites that fingerprint with this API in our 
 can be estimated as $ 67\% \cdot 768 \approx 515  $. 515 sites out of the total 4929
 is roughly 10\%. That means we can estimate that 10\% of all sites in our dataset use Canvas
 fingerprinting.
+This estimate is supported by the findings
+of Le et al., who have show that 10\% of the top 10.000 sites (according to Alexa) use
+canvas-based fingerprinting \cite{le_obfuscated_web_tracking}.
 
 We can see that Canvas fingerprinting is by far the most popular, though the Audio API, when used,
 is more likely to be used for fingerprinting.
 With this, we have answered our first leading question (cf. Sec.~\ref{sec:goal}).
+
+\begin{table}
+\centering
+\caption{Extrapolated Frequency of Fingerprinting Techniques}
+\begin{tabular}{l c c c}
+    \toprule
+    & Fingerprinters & Total API Use & Estimated Fingerprinters \\
+    \midrule
+    Audio & 72\% & 64 & 1\% \\
+    Canvas & 67\% & 768 & 10\% \\
+    WebGL & 45\% & 438 & 4\% \\
+    WebRTC & 20\% & 281 & 1\% \\
+    \bottomrule
+\end{tabular}
+\label{table:technique_frequency}
+\end{table}
 
 
 \section{Discussion}
@@ -1402,9 +1333,18 @@ This JavaScript, we assume, communicates with the network which ``owns''
 the button, not the site where the button is displayed.
 And this JavaScript may be a fingerprinter.
 
-From a user's perspective, however, there may not be much of a difference.
+From a the perspective of a user, however, there may not be much of a difference.
 In the end, the user is still getting fingerprinted and tracked, regardless
 of who is at fault.
+
+Since our analyses were done manually, many obfuscated scripts had to be labeled
+``inconclusive'', as analysing them would have exceeded the scope of this thesis.
+Better results could have been achieved by running these scripts in a patched
+browser, much like OpenWPM does, and reconstructing their behavior.
+
+Finally, only APIs that were previously know to be fingerprintable were analysed.
+We have not looked for or found APIs used for fingerprinting that were not previously
+known to be fingerprintable.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1417,12 +1357,12 @@ of who is at fault.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Design and Implementation}
 \label{chap:implementation}
-In Chapter~\ref{chap:data_acquisition}, we have shown many users of certain JavaScript APIs to be fingerprinters.
-We can build upon this knowledge to score websites in regards to their likelihood to be fingerprinting.
+In Chapter~\ref{chap:data_acquisition}, we have shown that many users of certain JavaScript APIs are fingerprinters.
+We can build upon this knowledge to score websites in regard to their likelihood to be fingerprinting.
 
 Our approach to implement automated fingerprinting detection is described in the following.
-The software will analyse the behaviour of a website based on a data gathering by OpenWPM.
-We will extract all information relevant to fingerprinting from the database,
+The software will analyse the behaviour of a website based on data gathered by OpenWPM.
+We will extract all information which is relevant to fingerprinting from the database,
 and present this to the user of the detection software.
 We will highlight any giveaways of fingerprinting, such as included magic strings
 or suspicious function names.
@@ -1443,17 +1383,27 @@ more likely to fingerprint than it actually is.
 
 \section{Algorithm}
 As mentioned in Chapter~\ref{chap:data_acquisition}, PrivacyScore uses one of six distinct values
-to rate a characteristic of a site. Our algorithm shall therefore produce a rating on a
+to rate a characteristic of a site (cf. Chap.~\ref{chap:data_acquisition}).
+Our algorithm shall therefore produce a rating on a
 six-value scale. The higher this score, the more confident we are that a website employs
 fingerprinting. As discussed in Section~\ref{sec:data_discussion}, we have listed
 certain giveaways, like the magic strings that are exclusively used in fingerprinting.
 Should we find any of these, we can immediately set the score to its highest possible
-value.
-Otherwise, we must increment the score for every fingerprintable API we find.
+value. We also give the highest possible score if a site uses a known fingerprinting
+script.
+
+We give half a point for every fingerprintable API used.
+Based on the results of our analyses in Section~\ref{sec:todataurl} and
+Secion~\ref{sec:audio_fingerprinting}, we give one extra point
+if the Canvas or Audio API is used.
+One point is awarded if suspicious names are found, and one point
+if fonts are enumerated and measured using \textit{measureText}.
+Finally, if one or more ``basic'' attributes are used, we give another point.
+
 We will give a perfect score of zero, which indicates no fingerprinting, only
 if a site uses no fingerprintable attributes or APIs.
 This is a rare case, as many modern sites use at least the \textit{languages}
-attribute to set the user's language, or the \textit{userAgent} string to
+attribute to set the language the site is displayed in, or the \textit{userAgent} string to
 perform certain user-experience enhancing optimizations.
 We do this because, as the study by Friedrich-Alexander-University (cf. Sec.~\ref{related_work:fau})
 has shown, even just the \textit{userAgent} can be unique among a large set of users.
@@ -1505,8 +1455,7 @@ def compute_score(results):
 We present the algorithm as pseudo code in Figure~\ref{code:scoring_algorithm}.
 The Canvas API must not only simply be used in any way to contribute
 to the scoring, but rather one of \textit{toDataURL} or \textit{getImageData} (or both) need to be used
-for it to be counted. As we have shown the Audio and Canvas APIs to be especially suspicious
-when it comes to fingerprinting, their presence gives an extra score point.
+for it to be counted.
 
 A score of zero corresponds to the PrivacyScore rating of ``doubleplusgood'', suggesting
 no fingerprintable APIs or attributes are used. A score of five means a ``critical'' rating,
@@ -1516,6 +1465,9 @@ the maximum rating.
 A scoring of all 4929 sites in our dataset gives us an arithmetic mean of
 about 1.97, and a standard deviation of about 1.55, suggesting that the average site
 is scored ``neutral'', but that there is a fairly high variability of scores.
+
+
+\section{Evaluation}
 
 \begin{table}
 \centering
@@ -1587,6 +1539,10 @@ and non-fingerprinting sites will generally be given scores of three or below.
 Give that a score of three maps to the rating ``warning'', and that most fingerprinters
 score above three, we contend that this is acceptable.
 
+To consolidate this conclusion, we have scored 30 different fingerprinters
+as well as 30 different non-fingerprinters. The results are shown in Table~\ref{table:scoring_results_fp_2}
+for the fingerprinters and Table~\ref{table:scoring_results_nonfp_2} for the non-fingerprinters.
+
 \begin{table}
 \centering
 \caption{Second scoring results for fingerprinters}
@@ -1627,10 +1583,6 @@ score above three, we contend that this is acceptable.
 \label{table:scoring_results_nonfp_2}
 \end{table}
 
-To consolidate this conclusion, we have scored 30 different fingerprinters
-as well as 30 different non-fingerprinters. The results are shown in Table~\ref{table:scoring_results_fp_2}
-for the fingerprinters and Table~\ref{table:scoring_results_nonfp_2} for the non-fingerprinters.
-
 The fingerprinters in this set show roughly the same distribution as with the previous set. There are no
 scores below three, and most scores are a five. The non-fingerprinters show even better scores than
 the previous set, with almost all scores at one, two scores at two, and no other scores higher
@@ -1640,10 +1592,10 @@ false positives or negatives.
 
 \section{Implementation Details}
 The various tests that PrivacyScore performs are structured into different \textit{test\_suites}.
-As our algorithm relies entirely on data collected by OpenWPM, we integrate our test
-into the already existant \textit{openwpm} test suite. We add a module in the \textit{test\_suites}
+As our algorithm relies entirely on data collected by OpenWPM, we have integrated our test
+into the already existant \textit{openwpm} test suite. We have added a module in the \textit{test\_suites}
 directory which can analyse an OpenWPM database and produce the required data to be used
-by our algorithm, add an import to the \textit{openwpm} test suite, and a call to our newly
+by our algorithm, and added an import to the \textit{openwpm} test suite as well as a call to our newly
 added module. A screenshot of fingerprinting-related results that can now be seen in PrivacyScore
 is shown in Figure~\ref{image:privacyscore}.
 Physical distributions of this thesis will include the patched version of PrivacyScore
@@ -1691,7 +1643,7 @@ We have not explored APIs that have not already been mentioned in related work, 
 our implementation may miss fingerprinters that use such an API.
 Non-canvas based font fingerprinting can potentially be detected by our implementation
 via the \textit{offsetWidth} and \textit{offsetHeight} properties, but we have shown
-this to be not practical.
+this not to be practical.
 More detailed WebGL instrumentation was not available when we collected our dataset,
 and we have performed only a limited analysis on the \textit{WebGLRenderingContext},
 using instrumentation we have patched into OpenWPM.
@@ -1719,6 +1671,19 @@ Some APIs are even used primarily for fingerprinting or other malicious behavior
 For example, we have found only a single legitimate use of the Audio API.
 We leave considerations on possible changes to browser behavior for future work.
 
+\subsection{Session Replay}
+So-called session recordings or session replay, used to record the exact actions
+a visitor performs on a website, can leak private information.\footnote{\url{https://freedom-to-tinker.com/2017/11/15/no-boundaries-exfiltration-of-personal-data-by-session-replay-scripts/} Visited on May 10, 2018}
+Among other things, data that a visitor inputs into forms can be read before the form is submitted.
+While this is not directly related to fingerprinting, data like email-addresses
+and passwords which a browser can automatically write to certain forms could be used
+for fingerprinting, and in any case, should not be recorded by third-parties.
+
+Detecting session recording could likely be implemented with OpenWPM as well,
+and would be a fitting addition to PrivacyScore.
+How feasible this is, and which modifications would have to be made is left to
+future work. This could also explore whether session recordings are used
+to enhance browser fingerprints.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Chapter End                                                              %%
@@ -1735,7 +1700,7 @@ We leave considerations on possible changes to browser behavior for future work.
 \begin{appendices}
 
 \chapter{OpenWPM Browser Params}
-The following configuration for OpenWPM's \textit{default\_browser\_params} was used.
+The following configuration of \textit{default\_browser\_params} was used with OpenWPM.
 
 
 \definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
