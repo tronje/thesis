@@ -1,0 +1,372 @@
+% rubber: setlist arguments --shell-escape
+
+% ===============================================================================
+% = LaTeX Beamer Template des Arbeitsbereichs Sicherheit in verteilten Systemem
+% = (c) 2016 Prof. Dr. Hannes Federrath, Uni Hamburg, Fachbereich Informatik
+% = https://svs.informatik.uni-hamburg.de
+% =
+% = Weitgehend in Übereinstimmung mit dem Corporate Design 2016 der UHH:
+% = https://www.uni-hamburg.de/beschaeftigtenportal/services/oeffentlichkeitsarbeit/corporate-design.html
+% = 
+% ===============================================================================
+%
+\documentclass[t]{beamer} 
+% Option t              Place text of slides at the (vertical) top of the slides.
+% Option handout        Ein PDF ohne Pausen und Overlayeffekte erzeugen.
+% Option aspectratio=43 169 => 16:9, 1610 => 16:10, 43 => 4:3
+\usepackage[utf8]{inputenc}
+% \usepackage[ngerman]{babel}
+\usepackage{graphicx,xcolor}
+\usepackage[T1]{fontenc} % 8-Bit-Zeichen; ermöglicht korrektes Kopieren von Umlauten aus dem pdf 
+\usepackage{booktabs}
+\usepackage{minted}
+
+% SVS-Theme benutzen
+\usetheme{svs2016}
+
+
+% =============================
+% = Ab hier Inhalte ändern... 
+% =============================
+
+\title[Fingerprinting Detection]{Implementation of browser fingerprinting detection and integration into PrivacyScore}
+% \subtitle{Ein Vorschlag}
+\author[Krabbe]{Tronje Krabbe}
+\institute[Uni Hamburg]{Universität Hamburg\\ Fachbereich Informatik}
+\date{12.06.2018}
+
+\begin{document}
+
+\begin{frame}[plain]
+	% Die Titelseite erscheit nach erneutem Übersetzen korrekt.
+	\maketitle
+\end{frame}
+
+
+\begin{frame}{Agenda}
+	% Die Gliederung erscheit nach erneutem Übersetzen korrekt.
+	\tableofcontents
+\end{frame}
+
+% basic problem; why is it interesting?
+\section{Browser Fingerprinting}
+\begin{frame}{What is Fingerprinting?}
+    \begin{block}{Fingerprinting}
+        The creation of a fingerprint, using information about the browser and the
+        device it is running on.
+    \end{block}
+
+    \pause
+
+    \begin{block}{Fingerprint}
+        A string that uniquely identifies a user within a large set of users.
+        \pause
+        Much like the biological fingerprint of a human.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Why Fingerprinting?}
+    \pause
+    \vspace{3cm}
+    \centering \LARGE Tracking.
+\end{frame}
+
+\begin{frame}{How does it work?}
+    Primarily via JavaScript.
+
+    \pause
+
+    \begin{block}{Short answer}
+        \begin{enumerate}
+            \pause
+            \item Gather information about the browser and the device.
+            \pause
+            \item Create a string, e.g. by hashing these attributes.
+            \pause
+            \item Done.
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\begin{frame}{How does it work?}
+    \begin{block}{Long answer}
+        Use any and all of these attributes:
+        \begin{columns}[T]
+            \begin{column}{.4\textwidth}
+                \begin{itemize}
+                    \item \texttt{userAgent}
+                    \item \texttt{language}
+                    \item list of installed fonts
+                    \item list of plugins
+                    \item screen resolution \& color depth
+                    \item timezone
+                \end{itemize}
+            \end{column}
+            \begin{column}{.6\textwidth}
+                \begin{itemize}
+                    \item \texttt{platform}
+                    \item \texttt{doNotTrack}
+                    \item \texttt{canvas} behavior
+                    \item WebGL behavior, renderer, vendor
+                    \item Web Audio API
+                    \item WebRTC API
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{block}
+\end{frame}
+
+\begin{frame}{How does it work?}
+    \begin{figure}
+        \includegraphics[scale=0.6]{pic/canvas_firefox.png}
+        \caption{Canvas fingerprinting in Firefox}
+    \end{figure}
+    \begin{figure}
+        \includegraphics[scale=0.5]{pic/canvas_chromium.png}
+        \caption{Canvas fingerprinting in Chromium}
+    \end{figure}
+\end{frame}
+
+% concrete problem tackled by this thesis
+\section{Fingerprinting Detection}
+\begin{frame}{Why fingerprinting detection?}
+    Motivation:
+    \begin{itemize}
+        \pause
+        \item Fingerprints can not be deleted.
+        \pause
+        \item Fingerprints can be created without the user ever knowing.
+    \end{itemize}
+
+    \pause
+
+    Goal: create transparency about the behavior of websites.
+\end{frame}
+
+\begin{frame}{Fingerprinting Detection}
+    \pause
+
+    Easy!
+
+    \vspace{0.7cm}
+
+    \pause
+
+    \begin{enumerate}
+        \item Simply log all JavaScript accesses to fingerprintable attributes!
+        \pause
+        \item Analyse them to see if a website fingerprints!
+        \pause
+        \item Done!
+    \end{enumerate}
+
+    \pause
+
+    \vspace{0.7cm}
+
+    \textbf{Primary problem:}
+    \pause
+    When is a website legitimately using a fingerprintable attribute,
+    and when is it used for fingerprinting?
+\end{frame}
+
+\begin{frame}{How to log JavaScript accesses?}
+    OpenWPM\footnote{\url{https://github.com/citp/OpenWPM/}} is the technological basis for this thesis.
+    It is also used by PrivacyScore, which came in handy later.
+    \vspace{0.5cm}
+
+    \pause
+
+    \begin{block}{OpenWPM}
+        OpenWPM uses Firefox, Selenium, and custom JavaScript injected into loaded sites to log
+calls to relevant browser attributes.
+    \end{block}
+    \vspace{0.5cm}
+
+    \pause
+
+    $\Rightarrow$ it is exactly what I needed.
+\end{frame}
+
+
+\section{Methods \& Approach}
+\begin{frame}{Methods \& Approach}
+    \pause
+
+    \textbf{Gather data:} Have OpenWPM crawl 5000 websites and record their JavaScript calls.
+    \vspace{0.3cm}
+
+    \pause
+
+    \textbf{Basic Approach:}
+
+    \pause
+
+    \begin{itemize}
+        \item Run automated analyses on the data.
+        \pause
+        \item Perform manual analyses on the data.
+        \pause
+        \item Draw conclusions.
+        \pause
+        \item Use the gained knowledge for the implementation.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Analyses}
+    \begin{itemize}
+        \item For each of the fingerprintable APIs, find all sites that use them.
+        \item Analyse a subset of these manually to learn about fingerprinting behavior.
+    \end{itemize}
+\end{frame}
+
+\subsection*{Example: Canvas Fingerprinting}
+\begin{frame}[fragile]{Example: Canvas Fingerprinting}
+    \begin{figure}
+    \begin{minted}{sql}
+    SELECT DISTINCT script_url
+    FROM javascript
+    WHERE symbol = 'HTMLCanvasElement.toDataURL';
+    \end{minted}
+    \caption{SQL query to select all sites using \texttt{toDataURL} on a Canvas.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Example: Canvas Fingerprinting}
+    \begin{table}
+        \centering
+        \caption{\texttt{toDataURL} users}
+        \begin{tabular}{l r r}
+            \toprule
+            & amount & percentage \\
+            \midrule
+            \textbf{analysed sites} & 75 & 100\% \\
+            \midrule
+            \textbf{fingerprinters} & 51 & 68\% \\
+            \textbf{inconclusive} & 15 & 20\% \\
+            \textbf{legitimate} & 9 & 12\% \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \vspace{0.5cm}
+
+    \pause
+    \textbf{Conclusion:} \texttt{toDataURL} use alone means a high likelihood of fingerprinting.
+\end{frame}
+
+\begin{frame}{How to spot fingerprinting}
+    \pause
+
+    \begin{itemize}
+        \item Search for keywords like ``fingerprint''.
+        \pause
+        \item Search for magic strings.
+        \pause
+        \item Search for giveaways that a known fingerprinting script is used.
+        \pause
+        \item Look for obvious enumeration of attributes and suspicious use of other APIs.
+        \pause
+        \item Beautify the script, modify and run it to understand what it does.
+    \end{itemize}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}{Conclusion}
+    \begin{columns}[T]
+        \begin{column}{0.4\textwidth}
+            \textbf{+}
+            \begin{itemize}
+                \pause
+                \item Known fingerprintable APIs are, in fact, very often used for fingerprinting.
+                \pause
+                \item Fingerprinting detection algorithm has been implemented and integrated into PrivacyScore.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.6\textwidth}
+            \textbf{-}
+            \begin{itemize}
+                \pause
+                \item No APIs that are currently not known to be fingerprintable were explored.
+                \pause
+                \item Detecting non-canvas font-fingerprinting is not (yet) feasible.
+                \pause
+                \item Due to OpenWPM limitations, detailed WebGL fingerprinting analysis was not performed.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\section{Outlook}
+\begin{frame}{Outlook / Future Work}
+    \begin{itemize}
+        \pause
+        \item Font Fingerprinting
+        \pause
+        \item WebGL Fingerprinting
+        \pause
+        \item Fingerprinting Defense
+        \pause
+        \item Other APIs
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+    \vspace{3.5cm}
+    \centering \Large Fin
+\end{frame}
+
+\section*{Bonus Slides}
+\begin{frame}[plain]
+    \vspace{3.5cm}
+    \centering \Large Bonus Slides
+\end{frame}
+
+\begin{frame}{\texttt{mmmmmmmmmmlli}}
+    \framesubtitle{Non-canvas font fingerprinting}
+
+    \pause
+
+    \textbf{Method:}
+    \begin{enumerate}
+        \item Write some text to an HTML element (like \texttt{span}) in a default font.
+        \pause
+        \item Measure the element's dimensions.
+        \pause
+        \item For each font in a large list of fonts:
+            \begin{enumerate}
+                \item Set the element's font to the current font.
+                \item Measure again. If the dimensions are different from the default, the font is installed.
+            \end{enumerate}
+    \end{enumerate}
+
+    \pause
+
+    \vspace{1cm}
+    $\Rightarrow$ add the list of installed fonts to the fingerprint.
+\end{frame}
+
+\begin{frame}{Example: Non-Canvas Font Fingerprinting}
+    \begin{table}
+        \centering
+        \caption{\texttt{offsetWidth} and \texttt{offsetHeight} users}
+        \begin{tabular}{l r r}
+            \toprule
+            & amount & percentage \\
+            \midrule
+            \textbf{analysed sites} & 75 & 100\% \\
+            \midrule
+            \textbf{fingerprinters} & 5 & 7\% \\
+            \textbf{inconclusive} & 7 & 9\% \\
+            \textbf{legitimate} & 63 & 84\% \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \vspace{0.5cm}
+
+    \pause
+    \textbf{Conclusion:} Not useful in fingerprinting detection.
+\end{frame}
+
+\end{document}

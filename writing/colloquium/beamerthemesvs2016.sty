@@ -1,0 +1,111 @@
+\mode<presentation>
+
+\usepackage[scaled]{helvet}
+\usepackage{tikz}
+
+% Navigationsleiste ausblenden
+\beamertemplatenavigationsymbolsempty 
+
+% Ränder definieren
+\setbeamersize{text margin left=5ex, text margin right=5ex}
+
+% Farbdefinitionen
+\definecolor{svsgrau1}{RGB}{191,191,191} % Balken in Kopfzeile
+\definecolor{svsgrau2}{RGB}{123,123,123} % Folienüberschriften
+\definecolor{svsrot}{RGB}{255,0,0} % Bullets
+\definecolor{uhhrot}{RGB}{193,34,42} % etwas dunkeres Rot
+\definecolor{svshellblau1}{RGB}{153,204,255} % Block Hintergrund
+\definecolor{svshellblau2}{RGB}{24,113,248} % Anstrich Ebene 2
+\definecolor{svsdunkelblau}{RGB}{38,82,128} % Text der Ebene 1
+
+% Farben der Bullets der Ebenen
+\setbeamercolor{itemize item}{fg=svsrot}
+\setbeamercolor{itemize subitem}{fg=svshellblau2}
+\setbeamercolor{enumerate item}{parent=itemize item}
+\setbeamercolor{enumerate subitem}{parent=itemize subitem}
+
+% Formen der Bullets der Ebenen
+\setbeamertemplate{itemize item}[circle] 
+\setbeamertemplate{itemize subitem}{--} 
+\setbeamertemplate{itemize subsubitem}[circle] 
+
+% Farben der Texte 
+\setbeamercolor{title}{fg=black}
+\setbeamercolor{structure}{fg=svsgrau2}
+\setbeamercolor{section in toc}{fg=black}
+\setbeamercolor{framesubtitle}{fg=svsdunkelblau}
+\setbeamercolor{itemize/enumerate body}{fg=svsdunkelblau}
+\setbeamercolor{itemize/enumerate subbody}{fg=black}
+\setbeamercolor{itemize/enumerate subsubbody}{fg=black}
+
+% Zeichensätze der Texte
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{institute}{size=\normalsize}
+\setbeamerfont{date}{size=\normalsize}
+\setbeamerfont{frametitle}{size=\large}
+\setbeamerfont{framesubtitle}{size=\footnotesize\raggedleft}
+\setbeamerfont{sections/subsections in toc}{size=\normalsize}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
+
+% Definitionen für farbig hinterlegten Block 
+\setbeamertemplate{blocks}[rounded]
+\setbeamercolor{block title}{fg=black,bg=svshellblau1}
+\setbeamercolor{block body}{parent=normal text,use=block title,bg=block title.bg!25!bg}
+\setbeamerfont{block title}{size=\normalsize}
+\setbeamerfont{block body}{size=\normalsize}
+
+% Definitionen für Agenda (FIXME: noch stärker an normale Listendefs. anpassen)
+\setbeamertemplate{section in toc}[sections numbered]
+\setbeamertemplate{subsection in toc}[square]
+
+% Kopfzeile
+\setbeamertemplate{headline}{
+	\rule{0pt}{17mm}%
+	{\color{svsgrau1}\rule{\paperwidth}{1pt}}%
+	\newline\vspace{-8mm}%
+}
+
+% Fusszeile
+\setbeamertemplate{footline}[text line]{
+	\parbox[b]{50mm}{\insertframenumber\\[1ex]}
+}
+
+% Title page
+\defbeamertemplate*{title page}{svs}[1][]{
+	\begin{tikzpicture}[remember picture,overlay]
+		\fill[svsgrau1]
+		([yshift=-22mm]current page.north west) rectangle (current page.south east);
+		\node[inner sep=0pt] (uhh) at ([xshift=21mm,yshift=-10mm]current page.north west) {
+		\includegraphics[width=2.5cm]{./pic/up-uhh-logo-u-2010-u-farbe-u-rgb}};
+	\end{tikzpicture}
+	\par
+	\vskip3cm 
+	\vbox{}
+	\vfill
+	\begingroup
+		\begin{beamercolorbox}[sep=8pt,#1]{title}
+		\usebeamerfont{title}\inserttitle\par%
+		\ifx\insertsubtitle\@empty%
+		\else%
+		\vskip0.25em%
+		{\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+		\fi%
+		\end{beamercolorbox}%
+		\vskip1em\par
+		\begin{beamercolorbox}[sep=8pt,#1]{author}
+		\usebeamerfont{author}\insertauthor
+		\end{beamercolorbox}
+		\begin{beamercolorbox}[sep=8pt,#1]{institute}
+		\usebeamerfont{institute}\insertinstitute
+		\end{beamercolorbox}
+		\begin{beamercolorbox}[sep=8pt,#1]{date}
+		\usebeamerfont{date}\insertdate
+		\end{beamercolorbox}\vskip0.5em
+		{\usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}
+	\endgroup
+	\vfill
+}
+
+\mode<all>
